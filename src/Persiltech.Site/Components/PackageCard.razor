@@ -1,0 +1,29 @@
+<MudPaper Outlined="true" Class="pa-6 h-100 d-flex flex-column">
+    <MudText Typo="Typo.h6" HtmlTag="h3">@Package.Id</MudText>
+
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-2 flex-grow-1">
+        @Package.Summary
+    </MudText>
+
+    <div class="d-flex align-center gap-2 mt-4">
+        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@Package.TargetFramework</MudChip>
+        @if (Package.IsPrerelease)
+        {
+            <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Warning">0.x</MudChip>
+        }
+    </div>
+
+    <MudButton Href="@Package.Route"
+               Variant="Variant.Filled"
+               Color="Color.Primary"
+               EndIcon="@Icons.Material.Outlined.ArrowForward"
+               Class="mt-4 align-self-start">
+        Ver documentación
+    </MudButton>
+</MudPaper>
+
+@code {
+    /// <summary>Paquete que la tarjeta resume.</summary>
+    [Parameter, EditorRequired]
+    public NuGetPackage Package { get; set; } = default!;
+}

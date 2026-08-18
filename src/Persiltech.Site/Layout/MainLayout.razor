@@ -1,0 +1,39 @@
+@inherits LayoutComponentBase
+
+<MudThemeProvider @ref="themeProvider"
+                  @bind-IsDarkMode="isDarkMode"
+                  Theme="SiteTheme.Instance"
+                  ObserveSystemDarkModeChange="true" />
+<MudPopoverProvider />
+<MudDialogProvider />
+<MudSnackbarProvider />
+
+<MudLayout>
+    <SiteAppBar IsDarkMode="isDarkMode" OnToggleDarkMode="ToggleDarkMode" />
+
+    <MudMainContent>
+        <MudContainer MaxWidth="MaxWidth.Medium" Class="py-10">
+            @Body
+            <SiteFooter />
+        </MudContainer>
+    </MudMainContent>
+</MudLayout>
+
+@code {
+    private MudThemeProvider themeProvider = default!;
+    private bool isDarkMode;
+
+    /// <inheritdoc />
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender)
+        {
+            return;
+        }
+
+        isDarkMode = await themeProvider.GetSystemDarkModeAsync();
+        StateHasChanged();
+    }
+
+    private void ToggleDarkMode() => isDarkMode = !isDarkMode;
+}

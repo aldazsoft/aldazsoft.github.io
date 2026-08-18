@@ -1,0 +1,23 @@
+<MudSimpleTable Dense="true" Hover="true" Bordered="false" Striped="false" Class="my-4">
+    <thead>
+        <tr>
+            <th>Versión</th>
+            <th>Cambios</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var release in Releases)
+        {
+            <tr>
+                <td><code>@release.Version</code></td>
+                <td>@release.Notes</td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    /// <summary>Historial de versiones publicadas, de la más reciente a la más antigua.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<PackageRelease> Releases { get; set; } = [];
+}

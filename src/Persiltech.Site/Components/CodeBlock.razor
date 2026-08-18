@@ -1,0 +1,51 @@
+@inject IJSRuntime JSRuntime
+@inject ISnackbar Snackbar
+@implements IAsyncDisposable
+
+<MudPaper Class="pa-0 my-4" Outlined="true">
+    @if (!string.IsNullOrWhiteSpace(Caption))
+    {
+        <div class="code-block-caption">
+            <MudText Typo="Typo.caption">@Caption</MudText>
+        </div>
+    }
+    <div class="code-block-body">
+        <pre class="code-block-pre"><code>@Code</code></pre>
+        <MudTooltip Text="Copiar">
+            <MudIconButton Icon="@Icons.Material.Outlined.ContentCopy"
+                           Size="Size.Small"
+                           Class="code-block-copy"
+                           aria-label="Copiar el código al portapapeles"
+                           OnClick="CopyAsync" />
+        </MudTooltip>
+    </div>
+</MudPaper>
+
+@code {
+    private IJSObjectReference? module;
+
+    /// <summary>Código que se muestra en el bloque.</summary>
+    [Parameter, EditorRequired]
+    public string Code { get; set; } = string.Empty;
+
+    /// <summary>Rótulo opcional sobre el bloque (Ej. el nombre del archivo).</summary>
+    [Parameter]
+    public string? Caption { get; set; }
+
+    private async Task CopyAsync()
+    {
+        module ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/clipboard.js");
+        await module.InvokeVoidAsync("copyText", Code);
+
+        Snackbar.Add("Copiado al portapapeles", Severity.Success);
+    }
+
+    /// <inheritdoc />
+    public async ValueTask DisposeAsync()
+    {
+        if (module is not null)
+        {
+            await module.DisposeAsync();
+        }
+    }
+}

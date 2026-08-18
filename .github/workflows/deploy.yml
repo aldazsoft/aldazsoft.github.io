@@ -1,0 +1,61 @@
+name: Deploy
+
+# El sitio se publica en cada push a main. La compilación vive aquí, no en un
+# workflow aparte: es la misma que produce el artefacto que se despliega.
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+  workflow_dispatch:
+
+# 'pages' y 'id-token' son los permisos que exige actions/deploy-pages.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Dos despliegues no deben pisarse, pero tampoco cancelarse a medias.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          global-json-file: global.json
+
+      - name: Publish
+        run: dotnet publish src/Persiltech.Site/Persiltech.Site.csproj --configuration Release --output ${{ github.workspace }}/publish
+
+      # GitHub Pages devuelve 404.html cuando la ruta pedida no existe como archivo.
+      # Una SPA necesita que esa respuesta cargue la aplicación para que el enrutador
+      # de Blazor resuelva la ruta en el cliente: de ahí la copia de index.html.
+      - name: SPA fallback
+        run: cp ${{ github.workspace }}/publish/wwwroot/index.html ${{ github.workspace }}/publish/wwwroot/404.html
+
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: ${{ github.workspace }}/publish/wwwroot
+
+  deploy:
+    name: Deploy
+    # Un pull request compila para validar, pero no publica.
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v5

@@ -1,0 +1,32 @@
+<MudAppBar Elevation="0" Color="Color.Surface" Class="site-appbar">
+    <MudLink Href="/" Underline="Underline.None" Class="d-flex align-center gap-2">
+        <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Color="Color.Primary" />
+        <MudText Typo="Typo.h6" HtmlTag="span">Persiltech</MudText>
+    </MudLink>
+
+    <MudSpacer />
+
+    <MudTooltip Text="@(IsDarkMode ? "Tema claro" : "Tema oscuro")">
+        <MudIconButton Icon="@(IsDarkMode ? Icons.Material.Outlined.LightMode : Icons.Material.Outlined.DarkMode)"
+                       aria-label="Cambiar entre tema claro y oscuro"
+                       OnClick="OnToggleDarkMode" />
+    </MudTooltip>
+
+    <MudTooltip Text="Apoyar el desarrollo">
+        <MudIconButton Icon="@Icons.Material.Outlined.Favorite"
+                       Href="@SiteLinks.SponsorUrl"
+                       Target="_blank"
+                       rel="noopener"
+                       aria-label="Apoyar el desarrollo en GitHub Sponsors" />
+    </MudTooltip>
+</MudAppBar>
+
+@code {
+    /// <summary>Indica si el tema oscuro está activo.</summary>
+    [Parameter]
+    public bool IsDarkMode { get; set; }
+
+    /// <summary>Se invoca al pulsar el conmutador de tema.</summary>
+    [Parameter]
+    public EventCallback OnToggleDarkMode { get; set; }
+}

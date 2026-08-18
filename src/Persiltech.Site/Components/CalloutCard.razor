@@ -1,0 +1,28 @@
+<MudPaper Outlined="true" Class="pa-6 h-100">
+    <div class="d-flex align-center gap-3">
+        <MudIcon Icon="@Icon" Color="@IconColor" />
+        <MudText Typo="Typo.h6" HtmlTag="h3">@Title</MudText>
+    </div>
+
+    <MudText Typo="Typo.body2" Color="Color.Secondary" Class="mt-3">
+        @ChildContent
+    </MudText>
+</MudPaper>
+
+@code {
+    /// <summary>Icono que encabeza la tarjeta.</summary>
+    [Parameter, EditorRequired]
+    public string Icon { get; set; } = string.Empty;
+
+    /// <summary>Color del icono.</summary>
+    [Parameter]
+    public Color IconColor { get; set; } = Color.Primary;
+
+    /// <summary>Título de la tarjeta.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Cuerpo de la tarjeta.</summary>
+    [Parameter, EditorRequired]
+    public RenderFragment ChildContent { get; set; } = default!;
+}

@@ -1,0 +1,7 @@
+<MudText Typo="Typo.h5" HtmlTag="h2" Class="section-heading mt-10 mb-3">@Text</MudText>
+
+@code {
+    /// <summary>Título de la sección.</summary>
+    [Parameter, EditorRequired]
+    public string Text { get; set; } = string.Empty;
+}

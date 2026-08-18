@@ -1,0 +1,10 @@
+global using Microsoft.AspNetCore.Components.Web;
+global using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
+global using Microsoft.Extensions.DependencyInjection;
+global using Microsoft.JSInterop;
+global using MudBlazor;
+global using MudBlazor.Services;
+global using Persiltech.Site;
+global using Persiltech.Site.Models;
+global using Persiltech.Site.Services;
+global using Persiltech.Site.Theme;

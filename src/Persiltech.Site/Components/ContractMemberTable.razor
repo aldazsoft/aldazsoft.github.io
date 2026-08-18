@@ -1,0 +1,23 @@
+<MudSimpleTable Dense="true" Hover="true" Bordered="false" Striped="false" Class="my-4">
+    <thead>
+        <tr>
+            <th>Miembro</th>
+            <th>Descripción</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var member in Members)
+        {
+            <tr>
+                <td><code>@member.Signature</code></td>
+                <td>@member.Description</td>
+            </tr>
+        }
+    </tbody>
+</MudSimpleTable>
+
+@code {
+    /// <summary>Miembros de la superficie pública que se documentan.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ContractMember> Members { get; set; } = [];
+}

@@ -1,0 +1,154 @@
+@page "/UserServices.Abstractions"
+@page "/UserServices.Abstractions/"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.UserServices.Abstractions</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" Caption="IUserService.cs" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        <code>UserName</code> y <code>FullName</code> son anulables de forma deliberada: un usuario
+        no autenticado no tiene identidad que exponer, y uno autenticado puede no traer ese dato
+        según el mecanismo de autenticación de la solución consumidora. El consumidor decide qué
+        hacer ante la ausencia del dato; el contrato no impone un valor de reemplazo.
+    </MudText>
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">La capa de aplicación depende únicamente de la interfaz:</MudText>
+    <CodeBlock Code="@UsageCode" />
+
+    <SectionHeading Text="Implementar el adaptador" />
+    <MudText Typo="Typo.body1">
+        El paquete no trae ninguna implementación: el adaptador de infraestructura y su registro
+        en el contenedor corresponden a la solución consumidora. Un adaptador típico de
+        ASP.NET Core resuelve el contrato desde <code>HttpContext.User</code>:
+    </MudText>
+    <CodeBlock Code="@AdapterCode" />
+    <MudText Typo="Typo.body1">Y se registra en el proyecto que compone la aplicación:</MudText>
+    <CodeBlock Code="@RegistrationCode" />
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Paquete de puros contratos: no incluye ninguna implementación concreta de
+            <code>IUserService</code>; cada solución consumidora provee su propio adaptador.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Sin dependencias a <code>Microsoft.AspNetCore.*</code> ni a ningún framework de
+            hosting, para poder referenciarse desde una capa de dominio o de aplicación.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Sin registro en el contenedor de dependencias: no hay implementación que registrar.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1"><code>@package.TargetFramework</code></MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+        La superficie pública no ha cambiado desde <code>0.1.0</code>: todo lo publicado hasta
+        ahora son cambios de documentación y de metadata.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl" Target="_blank" rel="noopener">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.UserServices.Abstractions";
+
+    private const string ContractCode = """
+        namespace Persiltech.UserServices.Abstractions;
+
+        public interface IUserService
+        {
+            bool IsAuthenticated { get; }
+
+            string? UserName { get; }
+
+            string? FullName { get; }
+        }
+        """;
+
+    private const string UsageCode = """
+        public sealed class CreateOrderHandler(IUserService userService)
+        {
+            public Order Handle(CreateOrderCommand command)
+            {
+                if (!userService.IsAuthenticated)
+                {
+                    throw new UnauthorizedAccessException();
+                }
+
+                return new Order(command.ProductId, userService.UserName);
+            }
+        }
+        """;
+
+    private const string AdapterCode = """
+        public sealed class HttpContextUserService(IHttpContextAccessor httpContextAccessor) : IUserService
+        {
+            public bool IsAuthenticated =>
+                httpContextAccessor.HttpContext?.User.Identity?.IsAuthenticated ?? false;
+
+            public string? UserName =>
+                httpContextAccessor.HttpContext?.User.Identity?.Name;
+
+            public string? FullName =>
+                httpContextAccessor.HttpContext?.User.FindFirst(ClaimTypes.GivenName)?.Value;
+        }
+        """;
+
+    private const string RegistrationCode = """
+        builder.Services.AddHttpContextAccessor();
+        builder.Services.AddScoped<IUserService, HttpContextUserService>();
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember("bool IsAuthenticated { get; }", "Indica si el usuario actual está autenticado."),
+        new ContractMember("string? UserName { get; }", "Nombre de usuario (login) del usuario actual, o null si no se dispone de dicho dato."),
+        new ContractMember("string? FullName { get; }", "Nombre completo del usuario actual, o null si no se dispone de dicho dato.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}
