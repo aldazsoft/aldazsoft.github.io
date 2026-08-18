@@ -1,16 +1,26 @@
 @page "/"
+@inject IProfileService ProfileService
 @inject IPackageCatalog Catalog
 
-<PageTitle>Paquetes de Persiltech</PageTitle>
+<PageTitle>Edinson Aldaz</PageTitle>
 
-<MudText Typo="Typo.h3" HtmlTag="h1">Paquetes de Persiltech</MudText>
+<HeroSection Title="@profile.FullName" Subtitle="@profile.Headline">
+    <Actions>
+        <MudButton Href="/packages"
+                   Variant="Variant.Filled"
+                   Color="Color.Primary"
+                   EndIcon="@Icons.Material.Outlined.ArrowForward">
+            Ver los paquetes
+        </MudButton>
+        <MudButton Href="/contact" Variant="Variant.Outlined" Color="Color.Primary">
+            Contacto
+        </MudButton>
+    </Actions>
+</HeroSection>
 
-<MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mt-3">
-    Librerías .NET publicadas en nuget.org. El código fuente es privado; esta es su
-    documentación y su canal de soporte.
-</MudText>
+<MudText Typo="Typo.body1" Class="mt-2">@profile.Introduction</MudText>
 
-<SectionHeading Text="Paquetes" />
+<SectionHeading Text="Paquetes publicados" />
 
 <MudGrid Spacing="4">
     @foreach (var package in Catalog.GetAll())
@@ -21,19 +31,13 @@
     }
 </MudGrid>
 
-<SectionHeading Text="Soporte y desarrollo" />
+<SectionHeading Text="Tecnologías" />
 
-<MudGrid Spacing="4">
-    <MudItem xs="12" sm="6">
-        <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
-            Para dudas, informes de error o peticiones de mejora, escribe a
-            <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
-        </CalloutCard>
-    </MudItem>
-    <MudItem xs="12" sm="6">
-        <CalloutCard Icon="@Icons.Material.Outlined.Favorite" IconColor="Color.Error" Title="Apoya el desarrollo">
-            Mantener estos paquetes lleva tiempo. Si te ahorran trabajo, puedes apoyarlos en
-            <MudLink Href="@SiteLinks.SponsorUrl" Target="_blank" rel="noopener">GitHub Sponsors</MudLink>.
-        </CalloutCard>
-    </MudItem>
-</MudGrid>
+<SkillGrid Groups="profile.Skills" />
+
+@code {
+    private SiteProfile profile = default!;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => profile = ProfileService.GetProfile();
+}

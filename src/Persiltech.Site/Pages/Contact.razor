@@ -1,0 +1,19 @@
+@page "/contact"
+@inject IProfileService ProfileService
+
+<PageTitle>Contacto</PageTitle>
+
+<MudText Typo="Typo.h3" HtmlTag="h1">Contacto</MudText>
+
+<MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mt-3 mb-6">
+    Para soporte de los paquetes, consultoría o cualquier propuesta de colaboración.
+</MudText>
+
+<ContactList Methods="profile.ContactMethods" />
+
+@code {
+    private SiteProfile profile = default!;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => profile = ProfileService.GetProfile();
+}

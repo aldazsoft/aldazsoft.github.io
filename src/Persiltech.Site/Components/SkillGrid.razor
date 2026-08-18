@@ -1,0 +1,23 @@
+<MudGrid Spacing="4">
+    @foreach (var group in Groups)
+    {
+        <MudItem xs="12" sm="6">
+            <MudPaper Outlined="true" Class="pa-5 h-100">
+                <MudText Typo="Typo.subtitle2" HtmlTag="h3" Color="Color.Secondary">@group.Title</MudText>
+
+                <div class="d-flex flex-wrap gap-2 mt-3">
+                    @foreach (var skill in group.Skills)
+                    {
+                        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined">@skill</MudChip>
+                    }
+                </div>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    /// <summary>Grupos de tecnologías que se muestran.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<SkillGroup> Groups { get; set; } = [];
+}

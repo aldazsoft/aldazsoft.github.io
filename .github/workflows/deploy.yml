@@ -35,23 +35,10 @@ jobs:
       - name: Publish
         run: dotnet publish src/Persiltech.Site/Persiltech.Site.csproj --configuration Release --output ./publish
 
-      # GitHub Pages sirve archivos, no rutas. Y una ruta con punto —como
-      # /UserServices.Abstractions— ningún servidor estático la trata como ruta de
-      # SPA: la resuelve como nombre de archivo. Por eso cada página de paquete se
-      # publica además como un index.html real dentro de su carpeta, y así responde
-      # 200 en lugar de un 404 con el contenido correcto. Importa porque esa es la
-      # URL que cada paquete declara en <PackageProjectUrl>.
-      - name: Publicar las rutas de paquete como archivos
-        run: |
-          for route in UserServices.Abstractions; do
-            mkdir -p "./publish/wwwroot/${route}"
-            cp ./publish/wwwroot/index.html "./publish/wwwroot/${route}/index.html"
-          done
-
-      # Red de seguridad para cualquier otra ruta: Pages sirve 404.html, y al ser
-      # copia de index.html el enrutador de Blazor la resuelve en el cliente.
-      - name: SPA fallback
-        run: cp ./publish/wwwroot/index.html ./publish/wwwroot/404.html
+      # Cada ruta se publica como archivo real y con sus propios metadatos.
+      # El porqué está documentado en la cabecera del script.
+      - name: Generar las páginas por ruta
+        run: bash .github/scripts/build-pages.sh ./publish/wwwroot
 
       - uses: actions/upload-pages-artifact@v5
         with:

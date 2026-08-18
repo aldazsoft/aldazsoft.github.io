@@ -108,3 +108,11 @@ table code {
 .site-appbar {
     border-bottom: 1px solid var(--mud-palette-lines-default);
 }
+
+.hero-section {
+    padding: 2rem 0 1rem;
+}
+
+.hero-subtitle {
+    max-width: 40ch;
+}

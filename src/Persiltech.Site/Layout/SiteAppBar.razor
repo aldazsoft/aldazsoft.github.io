@@ -1,10 +1,22 @@
 <MudAppBar Elevation="0" Color="Color.Surface" Class="site-appbar">
+    <MudIconButton Icon="@Icons.Material.Outlined.Menu"
+                   Class="d-md-none"
+                   aria-label="Abrir el menú de navegación"
+                   OnClick="OnToggleDrawer" />
+
     <MudLink Href="/" Underline="Underline.None" Class="d-flex align-center gap-2">
-        <MudIcon Icon="@Icons.Material.Outlined.Inventory2" Color="Color.Primary" />
-        <MudText Typo="Typo.h6" HtmlTag="span">Persiltech</MudText>
+        <MudIcon Icon="@Icons.Material.Outlined.Terminal" Color="Color.Primary" />
+        <MudText Typo="Typo.h6" HtmlTag="span">@Brand</MudText>
     </MudLink>
 
     <MudSpacer />
+
+    <div class="d-none d-md-flex align-center gap-1">
+        @foreach (var link in SiteNavigation.Links.Where(l => l.Href != "/"))
+        {
+            <MudButton Href="@link.Href" Variant="Variant.Text" Color="Color.Inherit">@link.Text</MudButton>
+        }
+    </div>
 
     <MudTooltip Text="@(IsDarkMode ? "Tema claro" : "Tema oscuro")">
         <MudIconButton Icon="@(IsDarkMode ? Icons.Material.Outlined.LightMode : Icons.Material.Outlined.DarkMode)"
@@ -22,6 +34,8 @@
 </MudAppBar>
 
 @code {
+    private const string Brand = "Edinson Aldaz";
+
     /// <summary>Indica si el tema oscuro está activo.</summary>
     [Parameter]
     public bool IsDarkMode { get; set; }
@@ -29,4 +43,8 @@
     /// <summary>Se invoca al pulsar el conmutador de tema.</summary>
     [Parameter]
     public EventCallback OnToggleDarkMode { get; set; }
+
+    /// <summary>Se invoca al pulsar el botón de menú en pantallas pequeñas.</summary>
+    [Parameter]
+    public EventCallback OnToggleDrawer { get; set; }
 }

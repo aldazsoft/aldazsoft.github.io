@@ -1,0 +1,40 @@
+@page "/about"
+@inject IProfileService ProfileService
+
+<PageTitle>Trayectoria</PageTitle>
+
+<MudText Typo="Typo.h3" HtmlTag="h1">Trayectoria</MudText>
+
+<MudText Typo="Typo.body1" Class="mt-4">@profile.Biography</MudText>
+
+<SectionHeading Text="Experiencia" />
+
+<ExperienceTimeline Entries="profile.Experience" />
+
+<SectionHeading Text="Tecnologías" />
+
+<SkillGrid Groups="profile.Skills" />
+
+<SectionHeading Text="Trabajemos juntos" />
+
+<MudGrid Spacing="4">
+    <MudItem xs="12" sm="6">
+        <CalloutCard Icon="@Icons.Material.Outlined.Handshake" Title="Consultoría y soporte">
+            Si necesitas ayuda con una solución .NET, o soporte sobre alguno de los
+            paquetes, <MudLink Href="/contact">hablemos</MudLink>.
+        </CalloutCard>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <CalloutCard Icon="@Icons.Material.Outlined.Inventory2" Title="Paquetes publicados">
+            El trabajo publicado y documentado está en
+            <MudLink Href="/packages">la sección de paquetes</MudLink>.
+        </CalloutCard>
+    </MudItem>
+</MudGrid>
+
+@code {
+    private SiteProfile profile = default!;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => profile = ProfileService.GetProfile();
+}

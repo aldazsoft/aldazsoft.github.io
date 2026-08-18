@@ -6,7 +6,7 @@ namespace Persiltech.Site;
 public static class DependencyInjection
 {
     /// <summary>
-    /// Registra el catálogo de paquetes y los servicios de MudBlazor.
+    /// Registra el catálogo de paquetes, el perfil del portafolio y los servicios de MudBlazor.
     /// </summary>
     /// <param name="services">Colección de servicios de la aplicación.</param>
     /// <returns>La misma colección, para encadenar llamadas.</returns>
@@ -14,6 +14,7 @@ public static class DependencyInjection
     {
         services.AddMudServices();
         services.AddScoped<IPackageCatalog, PackageCatalog>();
+        services.AddScoped<IProfileService, ProfileService>();
 
         return services;
     }

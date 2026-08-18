@@ -1,0 +1,17 @@
+<MudTimeline TimelinePosition="TimelinePosition.Start" Class="mt-4">
+    @foreach (var entry in Entries)
+    {
+        <MudTimelineItem Color="Color.Primary" Size="Size.Small">
+            <MudText Typo="Typo.caption" Color="Color.Secondary">@entry.Period</MudText>
+            <MudText Typo="Typo.subtitle1" HtmlTag="h3">@entry.Role</MudText>
+            <MudText Typo="Typo.body2" Color="Color.Secondary">@entry.Organization</MudText>
+            <MudText Typo="Typo.body2" Class="mt-2">@entry.Summary</MudText>
+        </MudTimelineItem>
+    }
+</MudTimeline>
+
+@code {
+    /// <summary>Entradas de la trayectoria, de la más reciente a la más antigua.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ExperienceEntry> Entries { get; set; } = [];
+}

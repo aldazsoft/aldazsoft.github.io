@@ -1,0 +1,37 @@
+@page "/packages"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Paquetes</PageTitle>
+
+<MudText Typo="Typo.h3" HtmlTag="h1">Paquetes</MudText>
+
+<MudText Typo="Typo.subtitle1" Color="Color.Secondary" Class="mt-3">
+    Librerías .NET publicadas en nuget.org. El código fuente es privado; esta es su
+    documentación y su canal de soporte.
+</MudText>
+
+<MudGrid Spacing="4" Class="mt-6">
+    @foreach (var package in Catalog.GetAll())
+    {
+        <MudItem xs="12" sm="6">
+            <PackageCard Package="package" />
+        </MudItem>
+    }
+</MudGrid>
+
+<SectionHeading Text="Soporte y desarrollo" />
+
+<MudGrid Spacing="4">
+    <MudItem xs="12" sm="6">
+        <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+            Para dudas, informes de error o peticiones de mejora, escribe a
+            <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+        </CalloutCard>
+    </MudItem>
+    <MudItem xs="12" sm="6">
+        <CalloutCard Icon="@Icons.Material.Outlined.Favorite" IconColor="Color.Error" Title="Apoya el desarrollo">
+            Mantener estos paquetes lleva tiempo. Si te ahorran trabajo, puedes apoyarlos en
+            <MudLink Href="@SiteLinks.SponsorUrl" Target="_blank" rel="noopener">GitHub Sponsors</MudLink>.
+        </CalloutCard>
+    </MudItem>
+</MudGrid>

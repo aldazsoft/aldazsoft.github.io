@@ -1,0 +1,28 @@
+<section class="hero-section">
+    <MudText Typo="Typo.h2" HtmlTag="h1">@Title</MudText>
+
+    <MudText Typo="Typo.h6" HtmlTag="p" Color="Color.Secondary" Class="mt-3 mb-6 hero-subtitle">
+        @Subtitle
+    </MudText>
+
+    @if (Actions is not null)
+    {
+        <div class="d-flex flex-wrap gap-3">
+            @Actions
+        </div>
+    }
+</section>
+
+@code {
+    /// <summary>Titular principal de la página.</summary>
+    [Parameter, EditorRequired]
+    public string Title { get; set; } = string.Empty;
+
+    /// <summary>Texto de apoyo bajo el titular.</summary>
+    [Parameter, EditorRequired]
+    public string Subtitle { get; set; } = string.Empty;
+
+    /// <summary>Botones de llamada a la acción, si los hay.</summary>
+    [Parameter]
+    public RenderFragment? Actions { get; set; }
+}

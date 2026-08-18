@@ -9,7 +9,13 @@
 <MudSnackbarProvider />
 
 <MudLayout>
-    <SiteAppBar IsDarkMode="isDarkMode" OnToggleDarkMode="ToggleDarkMode" />
+    <SiteAppBar IsDarkMode="isDarkMode"
+                OnToggleDarkMode="ToggleDarkMode"
+                OnToggleDrawer="ToggleDrawer" />
+
+    <MudDrawer @bind-Open="isDrawerOpen" Variant="DrawerVariant.Temporary" Elevation="1">
+        <SiteNavigation OnNavigate="CloseDrawer" />
+    </MudDrawer>
 
     <MudMainContent>
         <MudContainer MaxWidth="MaxWidth.Medium" Class="py-10">
@@ -22,6 +28,7 @@
 @code {
     private MudThemeProvider themeProvider = default!;
     private bool isDarkMode;
+    private bool isDrawerOpen;
 
     /// <inheritdoc />
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -36,4 +43,8 @@
     }
 
     private void ToggleDarkMode() => isDarkMode = !isDarkMode;
+
+    private void ToggleDrawer() => isDrawerOpen = !isDrawerOpen;
+
+    private void CloseDrawer() => isDrawerOpen = false;
 }

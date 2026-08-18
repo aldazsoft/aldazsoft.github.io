@@ -1,0 +1,20 @@
+<MudGrid Spacing="4">
+    @foreach (var method in Methods)
+    {
+        <MudItem xs="12" sm="6">
+            <MudPaper Outlined="true" Class="pa-5 h-100 d-flex align-center gap-4">
+                <MudIcon Icon="@method.Icon" Color="Color.Primary" />
+                <div>
+                    <MudText Typo="Typo.subtitle2" HtmlTag="h3" Color="Color.Secondary">@method.Label</MudText>
+                    <MudLink Href="@method.Url" Target="_blank" rel="noopener">@method.Value</MudLink>
+                </div>
+            </MudPaper>
+        </MudItem>
+    }
+</MudGrid>
+
+@code {
+    /// <summary>Vías de contacto que se publican.</summary>
+    [Parameter, EditorRequired]
+    public IReadOnlyList<ContactMethod> Methods { get; set; } = [];
+}

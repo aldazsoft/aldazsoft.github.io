@@ -1,0 +1,27 @@
+<MudNavMenu>
+    @foreach (var link in Links)
+    {
+        <MudNavLink Href="@link.Href" Match="@link.Match" Icon="@link.Icon" OnClick="OnNavigate">
+            @link.Text
+        </MudNavLink>
+    }
+</MudNavMenu>
+
+@code {
+    /// <summary>Enlaces del sitio, en el orden en que se muestran.</summary>
+    /// <remarks>
+    /// La portada usa <see cref="NavLinkMatch.All"/> porque su ruta es prefijo de
+    /// todas las demás y, con la coincidencia por prefijo, quedaría siempre activa.
+    /// </remarks>
+    public static IReadOnlyList<SiteNavLink> Links { get; } =
+    [
+        new SiteNavLink("/", "Inicio", Icons.Material.Outlined.Home, NavLinkMatch.All),
+        new SiteNavLink("/packages", "Paquetes", Icons.Material.Outlined.Inventory2, NavLinkMatch.Prefix),
+        new SiteNavLink("/about", "Trayectoria", Icons.Material.Outlined.Person, NavLinkMatch.Prefix),
+        new SiteNavLink("/contact", "Contacto", Icons.Material.Outlined.AlternateEmail, NavLinkMatch.Prefix)
+    ];
+
+    /// <summary>Se invoca al pulsar un enlace, para cerrar el menú lateral en móvil.</summary>
+    [Parameter]
+    public EventCallback OnNavigate { get; set; }
+}
