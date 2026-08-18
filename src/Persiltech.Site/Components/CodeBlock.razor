@@ -34,7 +34,7 @@
 
     private async Task CopyAsync()
     {
-        module ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "./js/clipboard.js");
+        module ??= await JSRuntime.InvokeAsync<IJSObjectReference>("import", "/js/clipboard.js");
         await module.InvokeVoidAsync("copyText", Code);
 
         Snackbar.Add("Copiado al portapapeles", Severity.Success);
