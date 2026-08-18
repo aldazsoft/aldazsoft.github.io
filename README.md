@@ -73,14 +73,18 @@ sitio.
 `actions/deploy-pages`. En la configuración del repositorio, **Settings → Pages →
 Source** debe estar en **GitHub Actions**, no en una rama.
 
-Tras publicar, `build-pages.sh` genera un `index.html` por ruta. Hace falta por
-dos motivos, ambos consecuencia de servir una SPA desde un hosting estático:
+Tras publicar, `build-pages.sh` genera un `index.html` por ruta, el `sitemap.xml`
+y el `robots.txt`. Hace falta por tres motivos, todos consecuencia de servir una
+SPA desde un hosting estático:
 
 1. **GitHub Pages sirve archivos, no rutas.** Sin un archivo real, la petición
    cae en `404.html`: el contenido se vería, pero con estado HTTP 404.
 2. **Los rastreadores de vistas previas no ejecutan JavaScript.** LinkedIn, X,
    WhatsApp o Slack leen las etiquetas del HTML servido, así que sin este paso
    todas las rutas compartirían el título y la descripción de la portada.
+3. **El HTML servido no contiene ningún enlace navegable**, porque Blazor pinta
+   la navegación en el cliente. Un rastreador que no ejecute JavaScript no tiene
+   por dónde descubrir las páginas: el `sitemap.xml` es su única vía de entrada.
 
 ## Añadir un paquete al sitio
 
@@ -88,4 +92,5 @@ dos motivos, ambos consecuencia de servir una SPA desde un hosting estático:
 2. Crea su página en `Pages/Packages/`, con la ruta que declare el
    `<PackageProjectUrl>` de su `.csproj`.
 3. Añade esa ruta, con su título y su descripción, a `routes` en
-   `.github/scripts/build-pages.sh`.
+   `.github/scripts/build-pages.sh`. De esa lista salen la página, su canonical
+   y su entrada en el `sitemap.xml`.
