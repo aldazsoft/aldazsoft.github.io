@@ -33,17 +33,29 @@ jobs:
           global-json-file: global.json
 
       - name: Publish
-        run: dotnet publish src/Persiltech.Site/Persiltech.Site.csproj --configuration Release --output ${{ github.workspace }}/publish
+        run: dotnet publish src/Persiltech.Site/Persiltech.Site.csproj --configuration Release --output ./publish
 
-      # GitHub Pages devuelve 404.html cuando la ruta pedida no existe como archivo.
-      # Una SPA necesita que esa respuesta cargue la aplicación para que el enrutador
-      # de Blazor resuelva la ruta en el cliente: de ahí la copia de index.html.
+      # GitHub Pages sirve archivos, no rutas. Y una ruta con punto —como
+      # /UserServices.Abstractions— ningún servidor estático la trata como ruta de
+      # SPA: la resuelve como nombre de archivo. Por eso cada página de paquete se
+      # publica además como un index.html real dentro de su carpeta, y así responde
+      # 200 en lugar de un 404 con el contenido correcto. Importa porque esa es la
+      # URL que cada paquete declara en <PackageProjectUrl>.
+      - name: Publicar las rutas de paquete como archivos
+        run: |
+          for route in UserServices.Abstractions; do
+            mkdir -p "./publish/wwwroot/${route}"
+            cp ./publish/wwwroot/index.html "./publish/wwwroot/${route}/index.html"
+          done
+
+      # Red de seguridad para cualquier otra ruta: Pages sirve 404.html, y al ser
+      # copia de index.html el enrutador de Blazor la resuelve en el cliente.
       - name: SPA fallback
-        run: cp ${{ github.workspace }}/publish/wwwroot/index.html ${{ github.workspace }}/publish/wwwroot/404.html
+        run: cp ./publish/wwwroot/index.html ./publish/wwwroot/404.html
 
       - uses: actions/upload-pages-artifact@v5
         with:
-          path: ${{ github.workspace }}/publish/wwwroot
+          path: ./publish/wwwroot
 
   deploy:
     name: Deploy
