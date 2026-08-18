@@ -8,7 +8,9 @@ namespace Persiltech.Site.Models;
 /// <param name="Introduction">Párrafo de presentación de la portada.</param>
 /// <param name="Biography">Presentación extendida de la página de trayectoria.</param>
 /// <param name="Skills">Tecnologías agrupadas por categoría.</param>
-/// <param name="Experience">Trayectoria, de lo más reciente a lo más antiguo.</param>
+/// <param name="Experience">Trayectoria laboral, de lo más reciente a lo más antiguo.</param>
+/// <param name="Education">Formación académica.</param>
+/// <param name="Training">Formación continua, de lo más reciente a lo más antiguo.</param>
 /// <param name="ContactMethods">Vías de contacto que se publican.</param>
 public sealed record SiteProfile(
     string FullName,
@@ -17,4 +19,6 @@ public sealed record SiteProfile(
     string Biography,
     IReadOnlyList<SkillGroup> Skills,
     IReadOnlyList<ExperienceEntry> Experience,
+    IReadOnlyList<Credential> Education,
+    IReadOnlyList<Credential> Training,
     IReadOnlyList<ContactMethod> ContactMethods);

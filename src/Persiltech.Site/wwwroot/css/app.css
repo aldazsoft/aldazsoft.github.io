@@ -116,3 +116,9 @@ table code {
 .hero-subtitle {
     max-width: 40ch;
 }
+
+.credential-period {
+    white-space: nowrap;
+    vertical-align: top;
+    width: 1%;
+}

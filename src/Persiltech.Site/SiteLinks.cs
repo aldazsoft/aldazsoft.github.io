@@ -12,7 +12,7 @@ public static class SiteLinks
     /// <summary>
     /// Correo al que se dirigen las dudas, los informes de error y las peticiones de mejora.
     /// </summary>
-    public const string SupportEmail = "CORREO-DE-SOPORTE";
+    public const string SupportEmail = "eduar2083@gmail.com";
 
     /// <summary>
     /// Perfil de GitHub Sponsors que recibe el apoyo económico.

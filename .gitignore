@@ -483,3 +483,8 @@ $RECYCLE.BIN/
 
 # Vim temporary swap files
 *.swp
+
+# Documentacion personal de origen (CV y similares). No se versiona: el
+# repositorio es publico y el CV contiene datos de contacto propios y de
+# terceros (referencias laborales) que no deben publicarse.
+info/

@@ -48,13 +48,19 @@ cada paquete vive en la raíz, con el nombre del paquete, y no bajo `/packages/`
 
 ## Contenido pendiente
 
-Las páginas de portafolio están maquetadas con marcadores de posición. Los textos
-reales viven en `Services/ProfileService.cs`, y todos los que faltan están
-marcados con `PENDIENTE`:
+El perfil vive en `Services/ProfileService.cs` y procede del CV del autor. Lo que
+falta por confirmar está marcado con `PENDIENTE`:
 
     grep -rn "PENDIENTE" src/
 
-El correo de soporte está en `SiteLinks.cs`.
+Queda el puesto y el resumen de **Brightcell Perú** (desde 02/2026). La fecha de
+fin de TPA Consultores está puesta en 01/2026 por deducción, no por dato
+confirmado.
+
+El CV de origen vive en `info/`, que **no se versiona**: el repositorio es
+público y el documento contiene el teléfono del autor y los datos de contacto de
+sus referencias laborales. Ni el teléfono ni las referencias se publican en el
+sitio.
 
 ## Desarrollo
 
