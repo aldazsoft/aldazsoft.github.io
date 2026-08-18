@@ -27,7 +27,7 @@ public sealed class ProfileService : IProfileService
             new SkillGroup("Plataforma .NET", [".NET / .NET Core", ".NET Framework", "ASP.NET MVC", "Web API", "Blazor WebAssembly", "Hosted Services"]),
             new SkillGroup("Datos", ["SQL Server", "Oracle", "Entity Framework Core", "ADO.NET", "LINQ", "SQL Developer", "Toad for Oracle"]),
             new SkillGroup("Nube y mensajería", ["Azure App Services", "Azure Functions", "Azure Service Bus", "Azure CLI", "RabbitMQ", "AWS S3", "Firebase"]),
-            new SkillGroup("Arquitectura y patrones", ["Arquitectura Limpia", "SOLID", "Domain-Driven Design", "CQRS", "Mediator", "Repository", "Unit of Work", "Inversión de control"]),
+            new SkillGroup("Arquitectura y patrones", ["Arquitectura Limpia", "Arquitectura Hexagonal", "SOLID", "Domain-Driven Design", "CQRS", "Mediator", "Repository", "Unit of Work", "Inversión de control"]),
             new SkillGroup("Herramientas y proceso", ["Visual Studio", "Git / GitFlow", "Azure DevOps", "Docker", "Postman", "Scrum", "Jira", "Bizagi"])
         ],
 
@@ -35,9 +35,9 @@ public sealed class ProfileService : IProfileService
         [
             new ExperienceEntry(
                 Period: "02/2026 – Actualidad",
-                Role: "PENDIENTE: puesto en Brightcell Perú",
+                Role: "Desarrollador .NET",
                 Organization: "Brightcell Perú",
-                Summary: "PENDIENTE: qué construyes ahí y con qué tecnologías. Una o dos frases, al nivel de detalle de las entradas siguientes."),
+                Summary: "Desarrollo los nuevos requerimientos de la cartera de clientes de la empresa —repartida entre Chile, México y Puerto Rico— y construyo las integraciones con sus sistemas. Trabajo sobre .NET 8 y .NET 10 con SQL Server, estructurando las soluciones con Arquitectura Hexagonal para aislar el dominio de cada integración, y llevo el ciclo de desarrollo con Git y Azure DevOps."),
 
             new ExperienceEntry(
                 Period: "10/2024 – 01/2026",
