@@ -36,6 +36,7 @@ routes=(
   "packages|Paquetes|Librerías .NET publicadas en nuget.org, con su documentación y su canal de soporte."
   "UserServices.Abstractions|Persiltech.UserServices.Abstractions|El Output Port IUserService: estado de autenticación e identidad del usuario actual para soluciones con Arquitectura Limpia."
   "UserServices|Persiltech.UserServices|El adaptador de ASP.NET Core para IUserService: resuelve la identidad y el estado de autenticación desde HttpContext.User."
+  "DomainValidation|Persiltech.DomainValidation|Validación de reglas de negocio con el patrón Specification: reglas fluidas por propiedad, evaluación asíncrona y errores reunidos en un ValidationResult."
   "about|Trayectoria|Experiencia, tecnologías y forma de trabajar de Edinson Aldaz."
   "contact|Contacto|Soporte de los paquetes, consultoría y colaboración."
   "license|Licencia MIT|Texto de la licencia MIT bajo la que se publican los paquetes, con su titular del copyright."

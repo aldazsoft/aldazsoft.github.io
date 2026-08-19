@@ -24,6 +24,10 @@ packages:
   - id: Persiltech.UserServices
     route: UserServices
     path: UserServices
+
+  - id: Persiltech.DomainValidation
+    route: DomainValidation
+    path: Persiltech.DomainValidation
 ---
 
 # Propósito

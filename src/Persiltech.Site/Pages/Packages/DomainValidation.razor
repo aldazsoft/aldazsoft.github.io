@@ -1,0 +1,358 @@
+@page "/DomainValidation"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.DomainValidation</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Mantiene las reglas de negocio en el dominio, fuera de los controladores y de los
+        manejadores de casos de uso. Cada regla es una <em>especificación</em>: una clase que
+        declara qué debe cumplir una entidad. Un validador las evalúa todas y devuelve los
+        errores reunidos en un <code>ValidationResult</code>, sin lanzar excepciones salvo que
+        se le pida.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+    <MudText Typo="Typo.body1">
+        Arrastra dos dependencias: <code>Persiltech.Localizer</code>, que resuelve los mensajes
+        de error predeterminados, y
+        <code>Microsoft.Extensions.DependencyInjection.Abstractions</code>, que aporta el
+        registro en el contenedor.
+    </MudText>
+
+    <SectionHeading Text="Espacios de nombres" />
+    <MudText Typo="Typo.body1">
+        La superficie se reparte en varios espacios de nombres. El de las reglas fluidas es el
+        menos evidente, y sin él el compilador no ve <code>IsRequired</code> ni sus hermanas:
+    </MudText>
+    <CodeBlock Code="@NamespacesCode" />
+
+    <SectionHeading Text="Declarar una especificación" />
+    <MudText Typo="Typo.body1">
+        Una especificación hereda de <code>DomainSpecificationBase&lt;T&gt;</code> y declara sus
+        reglas en el constructor. <code>Property</code> abre un árbol de reglas sobre una
+        propiedad, y cada regla devuelve el mismo árbol para poder encadenarlas:
+    </MudText>
+    <CodeBlock Code="@SpecificationCode" Caption="UserRegistrationSpecification.cs" />
+
+    <SectionHeading Text="Reglas disponibles" />
+    <ContractMemberTable Members="Rules" />
+    <MudText Typo="Typo.body1">
+        Todas aceptan un <code>errorMessage</code> que sustituye al mensaje predeterminado. Fíjate
+        en cómo trata cada una el valor ausente, porque no todas coinciden:
+        <code>HasMaxLength</code> da por buena una propiedad <code>null</code>, mientras que
+        <code>HasMinLength</code> y <code>HasFixedLength</code> la rechazan.
+    </MudText>
+
+    <CalloutCard Icon="@Icons.Material.Outlined.WarningAmber" Title="Comparaciones y valores nulos">
+        <code>GreaterThan</code> y <code>GreaterThanOrEqualTo</code> convierten el valor con
+        <code>Convert.ChangeType</code> antes de comparar, así que esperan una propiedad con
+        valor. Sobre una propiedad anulable, precédelas de <code>IsRequired</code> y abre el
+        árbol con <code>stopOnFirstPropertySpecificationError: true</code>, para que la
+        comparación no llegue a ejecutarse cuando el valor falta.
+    </CalloutCard>
+
+    <SectionHeading Text="Validar una entidad" />
+    <MudText Typo="Typo.body1">
+        <code>AddDomainSpecificationsValidator</code> registra el validador como genérico abierto
+        y con tiempo de vida <code>Scoped</code>. Las especificaciones las registra la aplicación:
+        el validador recibe todas las de su tipo y las evalúa en conjunto.
+    </MudText>
+    <CodeBlock Code="@RegistrationCode" Caption="Program.cs" />
+    <CodeBlock Code="@UsageCode" Caption="RegisterUserHandler.cs" />
+
+    <SectionHeading Text="Orden de evaluación" />
+    <MudText Typo="Typo.body1">
+        Hay tres interruptores, y cada uno actúa en un nivel distinto:
+    </MudText>
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksOne">
+            <code>Property(expresión, stopOnFirstPropertySpecificationError: true)</code> detiene
+            las reglas <em>de esa propiedad</em> en cuanto una falla, para no acumular errores
+            que se explican entre sí.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksTwo">
+            <code>StopOnFirstEntitySpecificationError</code> detiene el recorrido de las demás
+            propiedades <em>de esa especificación</em> cuando ya hay algún error.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Looks3">
+            <code>EvaluateOnlyIfNoPreviousErrors</code> marca una especificación como condicional.
+            El validador evalúa primero todas las incondicionales; solo si ninguna produjo errores
+            pasa a las condicionales, y ahí se detiene en la primera que falle.
+        </MudListItem>
+    </MudList>
+    <MudText Typo="Typo.body1">
+        Ese tercer interruptor es el que evita el trabajo caro. Una comprobación contra la base de
+        datos —que el correo no esté repetido, que el código exista— no tiene sentido mientras el
+        formato del dato siga siendo inválido:
+    </MudText>
+    <CodeBlock Code="@AsyncSpecificationCode" Caption="UniqueEmailSpecification.cs" />
+
+    <SectionHeading Text="Validar colecciones" />
+    <MudText Typo="Typo.body1">
+        <code>SetValidator</code> aplica el validador de otro tipo a cada elemento de una
+        colección. Los errores llegan con la ruta del elemento incorporada al nombre de la
+        propiedad —<code>OrderDetails[0].Quantity</code>—, así que el consumidor sabe qué fila
+        falló:
+    </MudText>
+    <CodeBlock Code="@SetValidatorCode" Caption="CreateOrderSpecification.cs" />
+
+    <SectionHeading Text="Cortar el flujo con una guarda" />
+    <MudText Typo="Typo.body1">
+        Cuando el caso de uso no tiene nada que hacer con una entidad inválida,
+        <code>DomainValidationGuard</code> valida y lanza
+        <code>DomainValidationException</code> con los errores dentro, en su propiedad
+        <code>Errors</code>:
+    </MudText>
+    <CodeBlock Code="@GuardCode" />
+
+    <SectionHeading Text="Mensajes de error" />
+    <MudText Typo="Typo.body1">
+        Los mensajes predeterminados viven en <code>ErrorMessages</code> y los resuelve
+        <code>Persiltech.Localizer</code>, así que salen en el idioma de la aplicación. Los que
+        llevan un dato —longitud, valor de comparación, expresión regular— se componen con
+        <code>string.Format</code>. Para un mensaje propio, pásalo como último argumento de la
+        regla; en <code>Must</code> es obligatorio, porque no hay predeterminado que aplicar.
+    </MudText>
+
+    <SectionHeading Text="Superficie pública" />
+    <ContractMemberTable Members="Members" />
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1"><code>@package.TargetFramework</code></MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Origen" />
+    <MudText Typo="Typo.body1">
+        La biblioteca se desarrolló durante el entrenamiento
+        <em>Introducción a Clean Architecture en aplicaciones .NET</em>, impartido por
+        Miguel Muñoz Serafín, y se publica como paquete para reutilizarla entre proyectos.
+    </MudText>
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.DomainValidation";
+
+    private const string NamespacesCode = """
+        using Persiltech.DomainValidation;
+        using Persiltech.DomainValidation.Core;
+        using Persiltech.DomainValidation.Exceptions;
+        using Persiltech.DomainValidation.Extensions.PropertySpecificationTreeExtensions;
+        using Persiltech.DomainValidation.Guards;
+        using Persiltech.DomainValidation.Interfaces;
+        using Persiltech.DomainValidation.ValueObjects;
+        """;
+
+    private const string SpecificationCode = """
+        public class UserRegistrationSpecification : DomainSpecificationBase<UserRegistration>
+        {
+            public UserRegistrationSpecification()
+            {
+                Property(u => u.Email, stopOnFirstPropertySpecificationError: true)
+                    .IsRequired()
+                    .EmailAddress();
+
+                Property(u => u.Password)
+                    .IsRequired()
+                    .HasMinLength(6)
+                    .Matches("[A-Z]", "Se requieren caracteres en mayúscula.");
+
+                Property(u => u.ConfirmPassword)
+                    .Equal(u => u.Password, "La confirmación no coincide con la contraseña.");
+            }
+        }
+        """;
+
+    private const string RegistrationCode = """
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddDomainSpecificationsValidator();
+
+        builder.Services.AddScoped<IDomainSpecification<UserRegistration>,
+            UserRegistrationSpecification>();
+
+        var app = builder.Build();
+        """;
+
+    private const string UsageCode = """
+        public sealed class RegisterUserHandler(
+            IDomainSpecificationsValidator<UserRegistration> validator)
+        {
+            public async Task<ValidationResult> HandleAsync(UserRegistration registration)
+            {
+                var result = await validator.ValidateAsync(registration);
+
+                if (!result.IsValid)
+                {
+                    return result;
+                }
+
+                // La entidad ya cumple sus reglas de negocio.
+                return result;
+            }
+        }
+        """;
+
+    private const string AsyncSpecificationCode = """
+        public class UniqueEmailSpecification(IUserRepository users)
+            : DomainSpecificationBase<UserRegistration>(evaluateOnlyIfNoPreviousErrors: true)
+        {
+            protected override async Task<List<SpecificationError>> ValidateSpecificationsAsync(
+                UserRegistration entity)
+            {
+                List<SpecificationError> errors = [];
+
+                if (await users.ExistsByEmailAsync(entity.Email))
+                {
+                    errors.Add(new SpecificationError(
+                        nameof(UserRegistration.Email), "El correo indicado ya existe."));
+                }
+
+                return errors;
+            }
+        }
+        """;
+
+    private const string SetValidatorCode = """
+        public class CreateOrderSpecification : DomainSpecificationBase<CreateOrder>
+        {
+            public CreateOrderSpecification(
+                IDomainSpecificationsValidator<CreateOrderDetail> orderDetailsValidator)
+            {
+                Property(o => o.CustomerId)
+                    .IsRequired()
+                    .HasFixedLength(5);
+
+                Property(o => o.OrderDetails)
+                    .NotEmpty();
+
+                Property(o => o.OrderDetails)
+                    .SetValidator(orderDetailsValidator);
+            }
+        }
+        """;
+
+    private const string GuardCode = """
+        await DomainValidationGuard.AgainstInvalidSpecification(
+            validator, registration, "El registro del usuario no es válido.");
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Rules =
+    [
+        new ContractMember(
+            "IsRequired(string? errorMessage = null)",
+            "Rechaza el valor null y, en una cadena, el texto vacío o formado solo por espacios."),
+        new ContractMember(
+            "NotEmpty(string? errorMessage = null)",
+            "Rechaza el valor null y la colección sin elementos."),
+        new ContractMember(
+            "HasMinLength(int minLength, string? errorMessage = null)",
+            "Exige esa longitud mínima en una cadena. Un valor null se rechaza."),
+        new ContractMember(
+            "HasMaxLength(int maxLength, string? errorMessage = null)",
+            "Limita la longitud de una cadena. Un valor null se da por bueno."),
+        new ContractMember(
+            "HasFixedLength(int length, string? errorMessage = null)",
+            "Exige esa longitud exacta en una cadena. Un valor null se rechaza."),
+        new ContractMember(
+            "EmailAddress(string? errorMessage = null)",
+            "Comprueba que la cadena tenga forma de dirección de correo."),
+        new ContractMember(
+            "Matches(string regularExpression, string? errorMessage = null)",
+            "Exige que la cadena case con la expresión regular. Un valor null se rechaza."),
+        new ContractMember(
+            "Equal(TProperty comparisonValue, string? errorMessage = null)",
+            "Compara con un valor fijo. Dos valores null se consideran iguales."),
+        new ContractMember(
+            "Equal(Expression<Func<T, TProperty>> comparisonProperty, string? errorMessage = null)",
+            "Compara con otra propiedad de la misma entidad, como una confirmación de contraseña."),
+        new ContractMember(
+            "GreaterThan(TProperty comparisonValue, string? errorMessage = null)",
+            "Exige un valor estrictamente mayor. La propiedad debe implementar IComparable<TProperty>."),
+        new ContractMember(
+            "GreaterThanOrEqualTo(TProperty comparisonValue, string? errorMessage = null)",
+            "Exige un valor mayor o igual. La propiedad debe implementar IComparable<TProperty>."),
+        new ContractMember(
+            "Must(Func<T, bool> predicate, string errorMessage)",
+            "Regla propia evaluada sobre la entidad completa, para lo que las demás no cubren."),
+        new ContractMember(
+            "Must(Func<TProperty, bool> predicate, string errorMessage)",
+            "Regla propia evaluada sobre el valor de la propiedad."),
+        new ContractMember(
+            "SetValidator(IDomainSpecificationsValidator<TElement> validator)",
+            "Aplica el validador de otro tipo a cada elemento de la colección.")
+    ];
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "abstract class DomainSpecificationBase<T>",
+            "Base de toda especificación. Aporta Property para declarar reglas y ValidateSpecificationsAsync para las que necesitan trabajo asíncrono."),
+        new ContractMember(
+            "interface IDomainSpecification<T>",
+            "Contrato de una especificación: sus errores, sus interruptores de evaluación y ValidateAsync."),
+        new ContractMember(
+            "interface IDomainSpecificationsValidator<T>",
+            "Evalúa todas las especificaciones registradas para T y devuelve un ValidationResult."),
+        new ContractMember(
+            "class DomainSpecificationsValidator<T>",
+            "Implementación del validador: primero las especificaciones incondicionales, después las condicionales."),
+        new ContractMember(
+            "class ValidationResult",
+            "Resultado de la validación: IsValid y la colección Errors."),
+        new ContractMember(
+            "class SpecificationError",
+            "Un error: PropertyName y ErrorMessage."),
+        new ContractMember(
+            "class DomainValidationException",
+            "Excepción con los errores de validación en su propiedad Errors."),
+        new ContractMember(
+            "static Task DomainValidationGuard.AgainstInvalidSpecification<T>(...)",
+            "Valida la entidad y lanza DomainValidationException si no cumple."),
+        new ContractMember(
+            "static IServiceCollection AddDomainSpecificationsValidator(this IServiceCollection services)",
+            "Registra IDomainSpecificationsValidator<> como genérico abierto con tiempo de vida Scoped.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

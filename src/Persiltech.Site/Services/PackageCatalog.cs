@@ -41,8 +41,22 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("0.1.0", "Primera publicación del adaptador HttpContextUserService.")
         ]);
 
+    private static readonly NuGetPackage DomainValidation = new(
+        Id: "Persiltech.DomainValidation",
+        Route: "/DomainValidation",
+        Summary: "Validación de reglas de negocio con el patrón Specification: reglas fluidas por propiedad, evaluación asíncrona y errores reunidos en un ValidationResult.",
+        TargetFramework: "net10.0",
+        IsPrerelease: false,
+        Releases:
+        [
+            new PackageRelease("1.0.2", "La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg, el README documenta la superficie pública y el .nuspec deja de declarar el repositorio, que no es público."),
+            new PackageRelease("1.0.1", "Primera versión disponible en nuget.org; reemplaza a la 1.0.0, retirada del listado.")
+        ]);
+
     // El contrato va primero y su adaptador después: es el orden en que se leen.
-    private static readonly IReadOnlyList<NuGetPackage> Packages = [UserServicesAbstractions, UserServices];
+    // DomainValidation cierra la lista: no depende de los otros dos.
+    private static readonly IReadOnlyList<NuGetPackage> Packages =
+        [UserServicesAbstractions, UserServices, DomainValidation];
 
     /// <inheritdoc />
     public IReadOnlyList<NuGetPackage> GetAll() => Packages;
