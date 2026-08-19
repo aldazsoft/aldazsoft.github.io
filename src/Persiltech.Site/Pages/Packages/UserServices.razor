@@ -1,0 +1,232 @@
+@page "/UserServices"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.UserServices</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Implementa <code>IUserService</code>, el Output Port que define
+        <MudLink Href="/UserServices.Abstractions">Persiltech.UserServices.Abstractions</MudLink>,
+        leyendo la identidad que ASP.NET Core ya haya establecido en <code>HttpContext.User</code>.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        Las propiedades se evalúan en cada lectura y nunca se cachean: la misma instancia puede
+        atender peticiones distintas, y es el <code>IHttpContextAccessor</code> quien resuelve el
+        contexto de la petición en curso. Cuando <code>IsAuthenticated</code> es <code>false</code>,
+        tanto <code>UserName</code> como <code>FullName</code> son <code>null</code>: no se leen
+        reclamaciones de un usuario no autenticado. Por eso ambas son anulables — el caso anónimo
+        es legítimo, no un error.
+    </MudText>
+
+    <SectionHeading Text="Resolución de las reclamaciones" />
+    <MudText Typo="Typo.body1">
+        <code>UserName</code> toma la primera con valor no vacío, en este orden:
+    </MudText>
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksOne">
+            <code>User.Identity.Name</code>, es decir, la reclamación que la propia identidad
+            declare como nombre (<code>ClaimTypes.Name</code> salvo que se haya remapeado, como
+            suele ocurrir con JWT).
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksTwo">
+            <code>preferred_username</code> (OpenID Connect).
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Looks3">
+            <code>ClaimTypes.Upn</code>.
+        </MudListItem>
+    </MudList>
+    <MudText Typo="Typo.body1">
+        <code>FullName</code> toma la primera opción que produzca un valor no vacío:
+    </MudText>
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksOne">
+            La reclamación <code>name</code> (OpenID Connect).
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksTwo">
+            La unión de <code>ClaimTypes.GivenName</code> y <code>ClaimTypes.Surname</code>,
+            separadas por un espacio, omitiendo la que falte.
+        </MudListItem>
+    </MudList>
+    <MudText Typo="Typo.body1">
+        Un valor formado solo por espacios en blanco cuenta como ausente y se descarta.
+    </MudText>
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">
+        Una sola llamada registra el adaptador, y la capa de aplicación sigue dependiendo
+        únicamente de la interfaz:
+    </MudText>
+    <CodeBlock Code="@UsageCode" Caption="Program.cs" />
+    <MudText Typo="Typo.body1">
+        <code>AddHttpContextUserService</code> registra <code>IHttpContextAccessor</code> y
+        <code>IUserService</code> → <code>HttpContextUserService</code> con tiempo de vida
+        <code>Singleton</code>, y devuelve la misma colección para encadenar. El registro es
+        idempotente: llamarlo dos veces no duplica los servicios, y si la aplicación ya tenía una
+        implementación de <code>IUserService</code> registrada, la conserva.
+    </MudText>
+
+    <CalloutCard Icon="@Icons.Material.Outlined.Info" Title="El paquete no autentica">
+        Solo lee la identidad que el canal de ASP.NET Core ya haya establecido. La aplicación
+        consumidora sigue siendo responsable de su <code>UseAuthentication()</code> y de su esquema.
+    </CalloutCard>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El contrato <code>IUserService</code> no se redefine aquí: llega del paquete de
+            abstracciones, referenciado por NuGet y nunca por <code>ProjectReference</code>.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            La dependencia de ASP.NET Core se declara con
+            <code>&lt;FrameworkReference Include="Microsoft.AspNetCore.App" /&gt;</code>, no con un
+            <code>&lt;PackageReference&gt;</code> a <code>Microsoft.AspNetCore.Http.Abstractions</code>:
+            ese paquete es la vía de ASP.NET Core 2.x sobre <code>netstandard2.0</code> y en una
+            librería <code>net10.0</code> duplicaría tipos que ya trae el framework compartido.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El adaptador es <code>sealed</code> y sin estado: toda la información sale de
+            <code>HttpContext</code> en el momento de la lectura.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Registro <code>Singleton</code>: es el tiempo de vida que corresponde a una identidad
+            ligada a la petición, y evita que un consumidor conserve por accidente valores de una
+            petición en otra.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Sin opciones de configuración para los nombres de las reclamaciones. El orden de
+            resolución es fijo en esta versión.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Fuera de alcance" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Adaptadores para escenarios sin <code>HttpContext</code> (consola, workers, servicios
+            en segundo plano).
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Autenticación y autorización.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Reclamaciones distintas de las tres propiedades del contrato (roles, permisos,
+            identificadores de inquilino): ampliar el contrato es trabajo del paquete de
+            abstracciones.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>, con el framework compartido
+        <code>Microsoft.AspNetCore.App</code>.
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl" Target="_blank" rel="noopener">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.UserServices";
+
+    private const string ContractCode = """
+        namespace Persiltech.UserServices;
+
+        public sealed class HttpContextUserService(IHttpContextAccessor httpContextAccessor) : IUserService
+        {
+            public bool IsAuthenticated { get; }
+
+            public string? UserName { get; }
+
+            public string? FullName { get; }
+        }
+
+        public static class DependencyInjection
+        {
+            public static IServiceCollection AddHttpContextUserService(this IServiceCollection services);
+        }
+        """;
+
+    private const string UsageCode = """
+        using Persiltech.UserServices;
+        using Persiltech.UserServices.Abstractions;
+
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.AddHttpContextUserService();
+
+        var app = builder.Build();
+
+        app.MapGet("/whoami", (IUserService userService) => new
+        {
+            userService.IsAuthenticated,
+            userService.UserName,
+            userService.FullName
+        });
+
+        app.Run();
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "HttpContextUserService(IHttpContextAccessor httpContextAccessor)",
+            "Construye el adaptador sobre el accesor indicado. Lanza ArgumentNullException si es null."),
+        new ContractMember(
+            "bool IsAuthenticated { get; }",
+            "true solo si hay HttpContext activo y su User.Identity está autenticada."),
+        new ContractMember(
+            "string? UserName { get; }",
+            "Login del usuario autenticado, o null si no hay usuario autenticado o ninguna reclamación aporta el dato."),
+        new ContractMember(
+            "string? FullName { get; }",
+            "Nombre completo del usuario autenticado, o null si no hay usuario autenticado o no se puede componer."),
+        new ContractMember(
+            "IServiceCollection AddHttpContextUserService(this IServiceCollection services)",
+            "Registra IHttpContextAccessor y IUserService → HttpContextUserService como Singleton. Devuelve la misma colección.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

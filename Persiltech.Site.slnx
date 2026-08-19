@@ -7,7 +7,9 @@
     <File Path="global.json" />
     <File Path="Directory.Build.props" />
     <File Path="Directory.Packages.props" />
+    <File Path="specs/Packages.md" />
     <File Path=".github/workflows/deploy.yml" />
+    <File Path=".github/scripts/build-pages.sh" />
   </Folder>
   <Folder Name="/src/">
     <Project Path="src/Persiltech.Site/Persiltech.Site.csproj" />

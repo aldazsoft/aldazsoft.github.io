@@ -35,6 +35,7 @@ lastmod="$(git log -1 --format=%cs 2>/dev/null || date -u +%F)"
 routes=(
   "packages|Paquetes|Librerías .NET publicadas en nuget.org, con su documentación y su canal de soporte."
   "UserServices.Abstractions|Persiltech.UserServices.Abstractions|El Output Port IUserService: estado de autenticación e identidad del usuario actual para soluciones con Arquitectura Limpia."
+  "UserServices|Persiltech.UserServices|El adaptador de ASP.NET Core para IUserService: resuelve la identidad y el estado de autenticación desde HttpContext.User."
   "about|Trayectoria|Experiencia, tecnologías y forma de trabajar de Edinson Aldaz."
   "contact|Contacto|Soporte de los paquetes, consultoría y colaboración."
 )
