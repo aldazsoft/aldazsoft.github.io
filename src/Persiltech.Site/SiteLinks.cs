@@ -1,7 +1,7 @@
 namespace Persiltech.Site;
 
 /// <summary>
-/// Direcciones externas que el sitio repite en varias páginas.
+/// Direcciones que el sitio repite en varias páginas.
 /// </summary>
 /// <remarks>
 /// Viven en un único sitio para que cambiar el correo de soporte o el destino
@@ -20,9 +20,16 @@ public static class SiteLinks
     public const string SponsorUrl = "https://github.com/sponsors/aldazsoft";
 
     /// <summary>
-    /// Texto de la licencia MIT bajo la que se publican los paquetes.
+    /// Página del sitio con el texto de la licencia MIT bajo la que se publican
+    /// los paquetes.
     /// </summary>
-    public const string LicenseUrl = "https://licenses.nuget.org/MIT";
+    /// <remarks>
+    /// Es una ruta propia y no <c>licenses.nuget.org/MIT</c>, que sirve la plantilla
+    /// SPDX con <c>&lt;year&gt;</c> y <c>&lt;copyright holders&gt;</c> sin rellenar.
+    /// Aquí el texto sale con su titular del copyright, igual que el <c>LICENSE</c>
+    /// que viaja dentro de cada paquete.
+    /// </remarks>
+    public const string LicenseUrl = "/license";
 
     /// <summary>
     /// Enlace <c>mailto:</c> derivado de <see cref="SupportEmail"/>.

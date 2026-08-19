@@ -38,6 +38,7 @@ routes=(
   "UserServices|Persiltech.UserServices|El adaptador de ASP.NET Core para IUserService: resuelve la identidad y el estado de autenticación desde HttpContext.User."
   "about|Trayectoria|Experiencia, tecnologías y forma de trabajar de Edinson Aldaz."
   "contact|Contacto|Soporte de los paquetes, consultoría y colaboración."
+  "license|Licencia MIT|Texto de la licencia MIT bajo la que se publican los paquetes, con su titular del copyright."
 )
 
 render() {
