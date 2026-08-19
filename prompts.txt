@@ -1,0 +1,138 @@
+# Prompts para sincronizar el portafolio con los paquetes
+#
+# Todos disparan el skill `sync-package-pages`, que reconcilia los tres archivos
+# obligatorios de cada paquete:
+#   1. src/Persiltech.Site/Services/PackageCatalog.cs  (entrada NuGetPackage)
+#   2. src/Persiltech.Site/Pages/Packages/{Nombre}.razor  (@page "/{route}")
+#   3. .github/scripts/build-pages.sh  (la ruta en el array `routes`)
+#
+# La lista válida de paquetes está en specs/Packages.md. El skill no descubre
+# paquetes por su cuenta, no edita los repositorios de los paquetes, no inventa
+# versiones publicadas ni redacta notas de versión, y no hace commit ni despliega.
+#
+# Copia el bloque que necesites y pégalo tal cual en Claude Code.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 1. AUDITAR — ¿está el portafolio al día?
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 1.1 Auditoría completa (todos los paquetes de specs/Packages.md)
+Audita si el portafolio está sincronizado con los paquetes. Recorre specs/Packages.md
+entero, lee cada repositorio en {packagesRoot}/{path} y dime, por paquete: si le falta
+la entrada en PackageCatalog.cs, la página .razor o la ruta en build-pages.sh; si el
+<VersionPrefix> del .csproj ya está en el historial del catálogo; si el
+<PackageProjectUrl> coincide con {siteUrl}/{route}/; y si el README del paquete
+contradice a la página. No cambies nada todavía: quiero el informe primero.
+
+# 1.2 Auditoría de un solo paquete
+Comprueba si la página de Persiltech.UserServices está al día respecto a su repositorio.
+Solo el informe, sin tocar archivos.
+
+# 1.3 Verificar que las rutas se sirven de verdad (lo que hace CI)
+Reproduce la verificación de CI del sitio: compila con `dotnet build Persiltech.Site.slnx`
+exigiendo cero avisos, publica en ./publish-check y ejecuta
+`bash .github/scripts/build-pages.sh ./publish-check/wwwroot`. Confirma que cada ruta de
+specs/Packages.md aparece como {route}/index.html, revisa en esos archivos el <title>, el
+canonical y el og:url, comprueba que la ruta está en sitemap.xml y elimina ./publish-check
+al terminar.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 2. AÑADIR — un paquete que aún no tiene página
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 2.1 Añadir un paquete ya declarado en la especificación
+Añade Persiltech.Results al sitio. Está declarado en specs/Packages.md: lee su repositorio
+(.csproj, specs/PublicApi.md y README.md), crea la entrada del catálogo, la página .razor
+tomando como plantilla las páginas que ya existen en Pages/Packages/, y añade su ruta a
+`routes` en build-pages.sh. Los tres archivos, no solo los dos primeros.
+
+# 2.2 Añadir un paquete que todavía no está en la especificación
+Quiero documentar el paquete {Id} en el sitio. Su repositorio está en {packagesRoot}/{path}.
+Primero añade su entrada a specs/Packages.md —con id, route y path, colocándolo en el orden
+de lectura correcto (el contrato antes que su adaptador)— y después sincroniza sus tres
+archivos.
+
+# 2.3 Recordatorio de orden de despliegue (para un paquete aún no publicado)
+La página de {Id} es nueva y el paquete todavía no se ha publicado en nuget.org. Al terminar
+recuérdame el orden: desplegar el sitio ANTES de publicar el paquete, para que su ficha no
+enlace a un 404.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 3. ACTUALIZAR — tras publicar una versión nueva
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 3.1 Actualizar la página de un paquete
+Actualiza la página de Persiltech.UserServices. Ya publiqué la versión que declara su
+<VersionPrefix>, así que puedes añadirla al historial. Relee el README y specs/PublicApi.md
+del repositorio y actualiza solo lo que haya cambiado: respeta lo que yo haya escrito a mano
+y copia el código de los CodeBlock del paquete, no lo reescribas.
+
+# 3.2 Registrar solo la versión nueva en el historial
+Añade al historial del catálogo la versión {X.Y.Z} de {Id} —ya está publicada en nuget.org—
+con las notas: "{descripción del cambio}". No toques nada más.
+
+# 3.3 Actualizar todos los paquetes de una vez
+Sincroniza las páginas de todos los paquetes de specs/Packages.md con sus repositorios.
+Para cada <VersionPrefix> que no encuentres en el historial, pregúntame si esa versión llegó
+ya a nuget.org antes de añadir la fila.
+
+# 3.4 Rellenar las notas que quedaron pendientes
+Busca en PackageCatalog.cs las filas de historial con notas "PENDIENTE: describir el cambio."
+y enuméramelas con su paquete y su versión, para que te dicte el texto definitivo.
+
+# 3.5 Salida de preview: 0.x → 1.0.0
+{Id} llega a 1.0.0. Actualiza su entrada del catálogo, pon IsPrerelease en false para que la
+página deje de mostrar el aviso de superficie inestable, añade la fila del historial y revisa
+que la prosa de la página no siga hablando de una superficie que puede cambiar.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 4. CASOS SUELTOS
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 4.1 Comprobar los <PackageProjectUrl>
+Compara el <PackageProjectUrl> de cada paquete de specs/Packages.md con {siteUrl}/{route}/ y
+dime cuáles no coinciden o no lo declaran, con las dos URLs a la vista. No lo corrijas: el
+arreglo vive en el repositorio del paquete y solo entra en vigor al publicar una versión nueva.
+
+# 4.2 Cambiar la ruta de un paquete en el sitio
+Quiero que {Id} pase a servirse en /{nuevaRuta}. Actualiza specs/Packages.md, el Route del
+catálogo, el @page de su .razor y su entrada en `routes` de build-pages.sh, y avísame de que
+su <PackageProjectUrl> queda desalineado hasta que publique la versión siguiente.
+
+# 4.3 Diagnosticar una página que se queda cargando para siempre
+La página de {Id} se queda con el indicador de carga girando. Comprueba que el PackageId de
+su bloque @code coincide exactamente con el Id de su entrada en PackageCatalog.cs.
+
+# 4.4 Detectar contradicciones entre README y especificación
+Compara el README.md y specs/PublicApi.md de {Id}. Si se contradicen, manda el README —es lo
+que se implementó— pero dime dónde va por detrás la especificación, o al revés.
+
+# 4.5 Repasar el uso de componentes y enlaces compartidos
+Revisa las páginas de Pages/Packages/ y dime si alguna se sale del contrato visual del sitio:
+componentes distintos de PackageHeader, SectionHeading, CodeBlock, ContractMemberTable,
+ReleaseHistoryTable o CalloutCard, o enlaces de soporte, patrocinio o licencia escritos como
+literales en vez de tomarse de SiteLinks.
+
+# 4.6 Paquete de código privado
+{Id} es de código privado (su .csproj no declara <RepositoryUrl> o trae
+<EnableSourceLink>false</EnableSourceLink>). Comprueba que su página no enlaza a github.com
+en ninguna sección.
+
+
+# ─────────────────────────────────────────────────────────────────────────────
+# 5. CIERRE
+# ─────────────────────────────────────────────────────────────────────────────
+
+# 5.1 Resumen final tras sincronizar
+Antes de terminar, dime: los archivos creados o modificados; las filas de historial que
+quedaron en PENDIENTE; los <PackageProjectUrl> desalineados; los paquetes cuyo repositorio no
+pudiste leer; y recuérdame que la comprobación visual queda pendiente, porque compilar no
+verifica que la página se pinte (el sitio es WebAssembly).
+
+# 5.2 Ver el sitio antes de hacer commit
+Levanta el sitio en local para revisar visualmente las páginas que acabas de tocar, y dime la
+URL. El despliegue lo dispara un push a main, así que no hagas commit: lo reviso yo primero.
