@@ -43,22 +43,38 @@ else
     </MudText>
     <CodeBlock Code="@SpecificationCode" Caption="UserRegistrationSpecification.cs" />
 
+    <CalloutCard Icon="@Icons.Material.Outlined.CheckCircle" Title="La evaluación no deja estado">
+        Cada regla <em>devuelve</em> sus errores en lugar de guardarlos en una propiedad. Por eso
+        una misma instancia puede validar varias entidades a la vez, y el tiempo de vida con que
+        la registres deja de ser una trampa. Es el cambio de fondo de la <code>2.0.0</code>.
+    </CalloutCard>
+
     <SectionHeading Text="Reglas disponibles" />
     <ContractMemberTable Members="Rules" />
     <MudText Typo="Typo.body1">
-        Todas aceptan un <code>errorMessage</code> que sustituye al mensaje predeterminado. Fíjate
-        en cómo trata cada una el valor ausente, porque no todas coinciden:
-        <code>HasMaxLength</code> da por buena una propiedad <code>null</code>, mientras que
+        Todas devuelven el mismo árbol para poder encadenarlas y todas aceptan un
+        <code>errorMessage</code> que sustituye al predeterminado. Fíjate en cómo trata cada una
+        el valor ausente, porque no todas coinciden: <code>HasMaxLength</code> da por buena una
+        propiedad <code>null</code> —no hay longitud que exceder—, mientras que
         <code>HasMinLength</code> y <code>HasFixedLength</code> la rechazan.
     </MudText>
-
-    <CalloutCard Icon="@Icons.Material.Outlined.WarningAmber" Title="Comparaciones y valores nulos">
-        <code>GreaterThan</code> y <code>GreaterThanOrEqualTo</code> convierten el valor con
-        <code>Convert.ChangeType</code> antes de comparar, así que esperan una propiedad con
-        valor. Sobre una propiedad anulable, precédelas de <code>IsRequired</code> y abre el
-        árbol con <code>stopOnFirstPropertySpecificationError: true</code>, para que la
-        comparación no llegue a ejecutarse cuando el valor falta.
-    </CalloutCard>
+    <MudText Typo="Typo.body1">
+        <code>GreaterThan</code> y <code>GreaterThanOrEqualTo</code> también rechazan el valor
+        ausente: nada puede superar al valor de comparación. Si la propiedad además es
+        obligatoria y prefieres un solo error en lugar de dos, precédelas de
+        <code>IsRequired</code> y abre el árbol con
+        <code>stopOnFirstPropertySpecificationError: true</code>.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Esas dos y <code>Equal</code> traen sobrecargas para propiedades anulables por valor, que
+        la restricción <code>IComparable&lt;T&gt;</code> no admite por sí sola:
+    </MudText>
+    <CodeBlock Code="@NullableComparisonCode" />
+    <MudText Typo="Typo.body1">
+        <code>Matches</code> analiza la expresión regular al declarar la regla, no en cada
+        validación, y limita cada evaluación a un segundo: un patrón de retroceso catastrófico
+        falla con <code>RegexMatchTimeoutException</code> en vez de colgar el hilo.
+    </MudText>
 
     <SectionHeading Text="Validar una entidad" />
     <MudText Typo="Typo.body1">
@@ -68,6 +84,11 @@ else
     </MudText>
     <CodeBlock Code="@RegistrationCode" Caption="Program.cs" />
     <CodeBlock Code="@UsageCode" Caption="RegisterUserHandler.cs" />
+    <MudText Typo="Typo.body1">
+        El recorrido es asíncrono de extremo a extremo y lleva el
+        <code>CancellationToken</code> hasta la última regla, incluidas las de cada elemento
+        dentro de <code>SetValidator</code>.
+    </MudText>
 
     <SectionHeading Text="Orden de evaluación" />
     <MudText Typo="Typo.body1">
@@ -80,8 +101,9 @@ else
             que se explican entre sí.
         </MudListItem>
         <MudListItem T="string" Icon="@Icons.Material.Outlined.LooksTwo">
-            <code>StopOnFirstEntitySpecificationError</code> detiene el recorrido de las demás
-            propiedades <em>de esa especificación</em> cuando ya hay algún error.
+            <code>DomainSpecificationBase&lt;T&gt;(stopOnFirstEntitySpecificationError: true)</code>
+            detiene el recorrido de las demás propiedades <em>de esa especificación</em> cuando
+            ya hay algún error.
         </MudListItem>
         <MudListItem T="string" Icon="@Icons.Material.Outlined.Looks3">
             <code>EvaluateOnlyIfNoPreviousErrors</code> marca una especificación como condicional.
@@ -95,13 +117,19 @@ else
         formato del dato siga siendo inválido:
     </MudText>
     <CodeBlock Code="@AsyncSpecificationCode" Caption="UniqueEmailSpecification.cs" />
+    <MudText Typo="Typo.body1">
+        Cuando la comprobación cabe en un predicado, <code>MustAsync</code> evita sobrescribir el
+        método:
+    </MudText>
+    <CodeBlock Code="@MustAsyncCode" />
 
     <SectionHeading Text="Validar colecciones" />
     <MudText Typo="Typo.body1">
-        <code>SetValidator</code> aplica el validador de otro tipo a cada elemento de una
-        colección. Los errores llegan con la ruta del elemento incorporada al nombre de la
-        propiedad —<code>OrderDetails[0].Quantity</code>—, así que el consumidor sabe qué fila
-        falló:
+        <code>SetValidator</code> aplica el validador de otro tipo a cada elemento, de forma
+        asíncrona y sin bloquear ningún hilo, de modo que las reglas del elemento pueden ir a la
+        base de datos como cualquier otra. Los errores llegan con la ruta del elemento
+        incorporada al nombre de la propiedad —<code>OrderDetails[0].Quantity</code>—, así que el
+        consumidor sabe qué fila falló:
     </MudText>
     <CodeBlock Code="@SetValidatorCode" Caption="CreateOrderSpecification.cs" />
 
@@ -122,9 +150,60 @@ else
         <code>string.Format</code>. Para un mensaje propio, pásalo como último argumento de la
         regla; en <code>Must</code> es obligatorio, porque no hay predeterminado que aplicar.
     </MudText>
+    <MudText Typo="Typo.body1">
+        El paquete trae dos traducciones: la <strong>neutra</strong>, en inglés, y la
+        <strong>española</strong>, que cubre toda la familia <code>es-*</code>. Cualquier otra
+        cultura cae en la neutra, de modo que el usuario final siempre ve un mensaje y nunca la
+        clave del recurso.
+    </MudText>
 
     <SectionHeading Text="Superficie pública" />
     <ContractMemberTable Members="Members" />
+
+    <SectionHeading Text="Migrar de 1.0.x a 2.0.0" />
+    <MudText Typo="Typo.body1">
+        El cambio de fondo es que la evaluación deja de guardar estado. Antes se preguntaba
+        <em>¿es válida?</em> y luego se leía la propiedad <code>Errors</code>; ahora la evaluación
+        <em>devuelve</em> los errores. De ahí sale casi todo lo demás.
+    </MudText>
+    <MudSimpleTable Dense="true" Hover="true" Bordered="false" Striped="false" Class="my-4">
+        <thead>
+            <tr>
+                <th>Antes (<code>1.0.x</code>)</th>
+                <th>Ahora (<code>2.0.0</code>)</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var step in MigrationSteps)
+            {
+                <tr>
+                    <td><code>@step.Before</code></td>
+                    <td><code>@step.After</code></td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    <MudText Typo="Typo.body1">
+        Lo que <strong>no</strong> cambia: cómo se declara una especificación.
+        <code>Property(...)</code>, las reglas fluidas y sus mensajes son idénticos, así que el
+        cuerpo de tus constructores se queda como está.
+    </MudText>
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Warning" IconColor="Color.Warning" Title="Si registrabas como Singleton">
+                En <code>1.0.x</code> estabas expuesto a veredictos cruzados bajo concurrencia. En
+                <code>2.0.0</code> <code>Singleton</code> pasa a ser seguro, pero
+                <code>Scoped</code> sigue siendo lo recomendable si la especificación depende de
+                un repositorio.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Warning" IconColor="Color.Warning" Title="SetValidator ya no bloquea">
+                Si tenías un <code>.Result</code> o un <code>.Wait()</code> alrededor de una
+                validación para sortear el bloqueo anterior, quítalo.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
 
     <SectionHeading Text="Compatibilidad" />
     <MudText Typo="Typo.body1"><code>@package.TargetFramework</code></MudText>
@@ -140,6 +219,8 @@ else
     <SectionHeading Text="Historial de versiones" />
     <MudText Typo="Typo.body1">
         El código fuente no es público, así que este es el registro de cambios del paquete.
+        Dentro de la rama <code>1.0.x</code> actualizar siempre fue seguro; la <code>2.0.0</code>
+        rompe el contrato, y a propósito.
     </MudText>
     <ReleaseHistoryTable Releases="package.Releases" />
 
@@ -200,6 +281,12 @@ else
         }
         """;
 
+    private const string NullableComparisonCode = """
+        Property(a => a.Quantity).GreaterThan(0);            // int?
+        Property(a => a.UnitPrice).GreaterThanOrEqualTo(0m); // decimal?
+        Property(a => a.Quantity).Equal(a => a.ConfirmedQuantity);
+        """;
+
     private const string RegistrationCode = """
         var builder = WebApplication.CreateBuilder(args);
 
@@ -235,11 +322,11 @@ else
             : DomainSpecificationBase<UserRegistration>(evaluateOnlyIfNoPreviousErrors: true)
         {
             protected override async Task<List<SpecificationError>> ValidateSpecificationsAsync(
-                UserRegistration entity)
+                UserRegistration entity, CancellationToken cancellationToken = default)
             {
                 List<SpecificationError> errors = [];
 
-                if (await users.ExistsByEmailAsync(entity.Email))
+                if (await users.ExistsByEmailAsync(entity.Email, cancellationToken))
                 {
                     errors.Add(new SpecificationError(
                         nameof(UserRegistration.Email), "El correo indicado ya existe."));
@@ -248,6 +335,13 @@ else
                 return errors;
             }
         }
+        """;
+
+    private const string MustAsyncCode = """
+        Property(u => u.Email).MustAsync(
+            async (entity, cancellationToken) =>
+                !await users.ExistsByEmailAsync(entity.Email, cancellationToken),
+            "El correo indicado ya existe.");
         """;
 
     private const string SetValidatorCode = """
@@ -305,29 +399,32 @@ else
             "Compara con otra propiedad de la misma entidad, como una confirmación de contraseña."),
         new ContractMember(
             "GreaterThan(TProperty comparisonValue, string? errorMessage = null)",
-            "Exige un valor estrictamente mayor. La propiedad debe implementar IComparable<TProperty>."),
+            "Exige un valor estrictamente mayor. Un valor ausente se rechaza. Hay sobrecarga para anulables por valor."),
         new ContractMember(
             "GreaterThanOrEqualTo(TProperty comparisonValue, string? errorMessage = null)",
-            "Exige un valor mayor o igual. La propiedad debe implementar IComparable<TProperty>."),
+            "Exige un valor mayor o igual. Un valor ausente se rechaza. Hay sobrecarga para anulables por valor."),
         new ContractMember(
             "Must(Func<T, bool> predicate, string errorMessage)",
-            "Regla propia evaluada sobre la entidad completa, para lo que las demás no cubren."),
+            "Regla propia evaluada sobre la entidad completa, o sobre el valor de la propiedad con la otra sobrecarga."),
         new ContractMember(
-            "Must(Func<TProperty, bool> predicate, string errorMessage)",
-            "Regla propia evaluada sobre el valor de la propiedad."),
+            "MustAsync(Func<T, CancellationToken, ValueTask<bool>> predicate, string errorMessage)",
+            "Regla propia que va a la base de datos o a un servicio, sin sobrescribir ValidateSpecificationsAsync."),
         new ContractMember(
             "SetValidator(IDomainSpecificationsValidator<TElement> validator)",
-            "Aplica el validador de otro tipo a cada elemento de la colección.")
+            "Aplica el validador de otro tipo a cada elemento de la colección, de forma asíncrona.")
     ];
 
     private static readonly IReadOnlyList<ContractMember> Members =
     [
         new ContractMember(
-            "abstract class DomainSpecificationBase<T>",
+            "abstract class DomainSpecificationBase<T>(bool evaluateOnlyIfNoPreviousErrors = false, bool stopOnFirstEntitySpecificationError = false)",
             "Base de toda especificación. Aporta Property para declarar reglas y ValidateSpecificationsAsync para las que necesitan trabajo asíncrono."),
         new ContractMember(
+            "interface ISpecification<T>",
+            "Regla suelta: ValueTask<IReadOnlyList<SpecificationError>> EvaluateAsync(T entity, CancellationToken cancellationToken = default)."),
+        new ContractMember(
             "interface IDomainSpecification<T>",
-            "Contrato de una especificación: sus errores, sus interruptores de evaluación y ValidateAsync."),
+            "Contrato de una especificación: sus dos interruptores de evaluación y un ValidateAsync que devuelve los errores."),
         new ContractMember(
             "interface IDomainSpecificationsValidator<T>",
             "Evalúa todas las especificaciones registradas para T y devuelve un ValidationResult."),
@@ -335,8 +432,11 @@ else
             "class DomainSpecificationsValidator<T>",
             "Implementación del validador: primero las especificaciones incondicionales, después las condicionales."),
         new ContractMember(
+            "class AsyncSpecification<T>",
+            "Regla construida a partir de un predicado asíncrono. Es la pieza sobre la que se apoya MustAsync."),
+        new ContractMember(
             "class ValidationResult",
-            "Resultado de la validación: IsValid y la colección Errors."),
+            "Resultado de la validación: IsValid y la lista Errors, materializada al construirse."),
         new ContractMember(
             "class SpecificationError",
             "Un error: PropertyName y ErrorMessage."),
@@ -347,9 +447,33 @@ else
             "static Task DomainValidationGuard.AgainstInvalidSpecification<T>(...)",
             "Valida la entidad y lanza DomainValidationException si no cumple."),
         new ContractMember(
-            "static IServiceCollection AddDomainSpecificationsValidator(this IServiceCollection services)",
+            "static IServiceCollection DependencyInjection.AddDomainSpecificationsValidator(this IServiceCollection services)",
             "Registra IDomainSpecificationsValidator<> como genérico abierto con tiempo de vida Scoped.")
     ];
+
+    private static readonly IReadOnlyList<MigrationStep> MigrationSteps =
+    [
+        new MigrationStep(
+            "bool ok = await specification.ValidateAsync(entity); var errors = specification.Errors;",
+            "var errors = await specification.ValidateAsync(entity); bool ok = errors.Count == 0;"),
+        new MigrationStep(
+            "bool ok = specification.IsSatisfiedBy(entity); var errors = specification.Errors;",
+            "var errors = await specification.EvaluateAsync(entity);"),
+        new MigrationStep(
+            "StopOnFirstEntitySpecificationError = true; en el constructor",
+            ": base(stopOnFirstEntitySpecificationError: true)"),
+        new MigrationStep(
+            "protected override Task<List<SpecificationError>> ValidateSpecificationsAsync(T entity)",
+            "... (T entity, CancellationToken cancellationToken = default)"),
+        new MigrationStep(
+            "DependencyContainer.AddDomainSpecificationsValidator()",
+            "DependencyInjection.AddDomainSpecificationsValidator() — el método no cambia"),
+        new MigrationStep(
+            "IEnumerable<SpecificationError> ValidationResult.Errors",
+            "IReadOnlyList<SpecificationError> ValidationResult.Errors")
+    ];
+
+    private sealed record MigrationStep(string Before, string After);
 
     private NuGetPackage? package;
 

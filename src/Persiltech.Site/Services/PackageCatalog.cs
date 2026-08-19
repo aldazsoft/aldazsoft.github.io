@@ -49,7 +49,8 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
-            new PackageRelease("1.0.2", "La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg, el README documenta la superficie pública y el .nuspec deja de declarar el repositorio, que no es público."),
+            new PackageRelease("2.0.1", "Corrige el historial de versiones, que listaba una 1.0.2 y una 1.0.3 que se prepararon pero nunca llegaron a nuget.org. Sin cambios en el código ni en la superficie pública."),
+            new PackageRelease("2.0.0", "La evaluación deja de guardar estado: las especificaciones devuelven sus errores en lugar de dejarlos en una propiedad, así que una instancia compartida ya no devuelve el veredicto de otra entidad. El recorrido pasa a ser asíncrono de extremo a extremo y acepta CancellationToken. Nuevas MustAsync y AsyncSpecification, sobrecargas de comparación para anulables por valor, DependencyContainer renombrado a DependencyInjection y erratas corregidas."),
             new PackageRelease("1.0.1", "Primera versión disponible en nuget.org; reemplaza a la 1.0.0, retirada del listado.")
         ]);
 
