@@ -19,7 +19,7 @@ desde la ficha del paquete**, no un detalle interno.
 - Auditar si alguna página se ha quedado atrás respecto a su paquete
 
 **No uses este skill** para cambiar el diseño del sitio, su portafolio personal o su
-navegación: esto solo toca lo que documenta paquetes.
+navegación: esto solo toca la documentación de paquetes.
 
 ---
 
@@ -31,7 +31,7 @@ navegación: esto solo toca lo que documenta paquetes.
   cada cambio ahí implica publicar. Lo que no cuadre **se reporta**, no se corrige.
 - **No inventa versiones publicadas.** El `<VersionPrefix>` de un `.csproj` es la versión que
   se publicará *la próxima vez*, y puede no estar todavía en nuget.org.
-- **No redacta notas de versión.** Ver el Paso 4.
+- **No redacta notas de versión.** Ver el _Paso 4_.
 - **No hace commit ni despliega.** El despliegue lo dispara un push a `main`.
 
 ---

@@ -6,7 +6,7 @@ siteUrl: https://aldazsoft.github.io
 
 # Directorio que contiene los repositorios de los paquetes. Los 'path' de abajo
 # son relativos a él.
-packagesRoot: E:\Repos\Github\aldazsoft\Persiltech
+packagesRoot: E:\Repos\Github\aldazsoft\Persiltech\Packages
 
 # Un paquete por entrada:
 #   id    -> identificador en nuget.org; es la clave contra PackageCatalog
@@ -34,5 +34,5 @@ de verdad.
 
 El código fuente de los paquetes no es público: nuget.org solo muestra el `.nupkg`,
 y este sitio es su única documentación navegable y su canal de soporte. Por eso el
-enlace *Project website* de cada paquete apunta aquí, y por eso una página que se
+enlace _Project website_ de cada paquete apunta aquí, y por eso una página que se
 queda atrás respecto a su paquete es un defecto visible desde fuera.
