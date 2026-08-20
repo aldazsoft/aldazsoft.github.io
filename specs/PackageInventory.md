@@ -5,11 +5,11 @@ siteUrl: https://aldazsoft.github.io
 audited: 2026-08-19
 totals:
   listo: 3
-  sin-página: 0
+  sin-página: 1
   calidad: 0
   documentacion: 0
   metadata: 0
-  estructura: 1
+  estructura: 0
   no-legible: 0
 ---
 
@@ -27,89 +27,70 @@ calidad → sin-página` es el de trabajo, porque cada etapa se apoya en la ante
 
 | Paquete | Estado | Versión del proyecto | Pendientes |
 |---|---|---|---|
-| `Persiltech.Results` | `estructura` | 1.0.0 | 22 |
+| `Persiltech.Localizer` | `sin-página` | 1.0.2 | 3 |
 | `Persiltech.DomainValidation` | `listo` | 2.0.1 | 0 |
 | `Persiltech.UserServices` | `listo` | 0.1.4 | 0 |
 | `Persiltech.UserServices.Abstractions` | `listo` | 0.1.11 | 0 |
 
 Las versiones son las que declara el `.csproj`, es decir, las que se publicarán la próxima
-vez. **No consta que sean las publicadas en nuget.org**: eso no se deduce del disco.
+vez. **No consta que sean las publicadas en nuget.org** salvo donde se indique.
+
+## Fuera de esta auditoría
+
+- **`Persiltech.Results`** sigue en el monorepo (`Persiltech/Src/Persiltech.Results`), a la
+  espera de decidir si sustituye al publicado `Persiltech.Result` (singular, 1.0.6), al que
+  tres proyectos del monorepo aún apuntan. La copia previa en `Packages/Results` se eliminó.
+- Los **~95 paquetes restantes** del monorepo no se auditan hasta extraerlos: el plan espera
+  **un paquete por repositorio** y no sabe leer una solución con 80 proyectos.
 
 ## Pendiente de publicar
 
-Ninguno. `Persiltech.DomainValidation` publicó su `2.0.1` el 2026-08-19 y el portafolio ya la
-documenta.
+- **`Persiltech.Localizer` 1.0.2** — extraído del monorepo y homologado el 2026-08-19, sin
+  publicar y sin commitear. Su ficha en nuget.org sigue mostrando la `1.0.1`, cuyo
+  *Project website* apunta al repositorio del monorepo. **Despliega el sitio con su página
+  antes de publicar**, o la ficha corregida enlazará a un 404.
 
 ## Por confirmar
 
-Preguntas que la auditoría no puede responder leyendo el disco.
-
-Ninguna abierta. `Persiltech.Results` no declara `<RepositoryUrl>`, así que se toma como
-código privado sin necesidad de preguntar, y no tiene `LICENSE` con el que su `<Copyright>`
-pueda entrar en conflicto — ese conflicto aparecerá al crearlo.
+Ninguna abierta.
 
 ### Resueltas
 
 - **`Persiltech.DomainValidation`** — ¿es público `https://github.com/aldazsoft/DomainValidation`?
-  **No** (confirmado el 2026-08-19). La metadata de repositorio se retiró del `.csproj` y
-  SourceLink quedó apagado.
+  **No** (2026-08-19). Metadata de repositorio retirada y SourceLink apagado.
 - **`Persiltech.DomainValidation`** — el `LICENSE` declaraba a Miguel Muñoz Serafín (2025) como
-  titular, mientras el `.csproj` declaraba Copyright de Persiltech. Se alineó a
-  **Persiltech (2026)** por decisión del usuario el 2026-08-19. El crédito del entrenamiento se
-  conserva en el README y en la página del portafolio, que es atribución de origen, no de
-  titularidad.
-- **Versiones publicadas de `Persiltech.DomainValidation`** — verificado contra nuget.org el
-  2026-08-19: `1.0.1`, `2.0.0` y `2.0.1` listadas, `1.0.0` deslistada. Las `1.0.2` y `1.0.3`
-  se prepararon pero **nunca se publicaron**; la `2.0.1` corrigió el historial del README y el
-  catálogo del sitio ya no las menciona.
+  titular frente al `<Copyright>` de Persiltech. Se alineó a **Persiltech (2026)** por decisión
+  del usuario el 2026-08-19. El crédito del entrenamiento se conserva como atribución de origen.
+- **Titular de la licencia para los paquetes que salen del monorepo** — el `LICENSE` del
+  monorepo dice `2025 aldazsoft`. Se decidió **Persiltech** el 2026-08-19, y así se aplicó a
+  `Persiltech.Localizer`. **Vale para todos los que se extraigan después.**
+- **Versiones publicadas**, verificadas contra nuget.org el 2026-08-19:
+  - `Persiltech.DomainValidation`: `1.0.1`, `2.0.0`, `2.0.1` listadas; `1.0.0` deslistada. Las
+    `1.0.2` y `1.0.3` nunca se publicaron.
+  - `Persiltech.Localizer`: `1.0.0` y `1.0.1` listadas.
+  - `Persiltech.Results`: `1.0.0` listada.
 
 ## Detalle
 
 Solo los paquetes que no están `listo`.
 
-### Persiltech.Results — `estructura`
+### Persiltech.Localizer — `sin-página`
 
-`Results` · ruta prevista `/Results` · 9 tipos públicos
+`Localizer` · net10.0 · ruta prevista `/Localizer`
 
-Es un repositorio anterior al flujo de `scaffold-nuget-package` y le falta el esqueleto
-entero: no tiene solución, ni `Directory.Build.props`, ni gestión centralizada de paquetes, ni
-los archivos de repositorio. Sin `<TargetFramework>` **no compila**, así que la etapa de
-calidad no se pudo medir todavía.
-
-**Estructura** (10)
-
-- No hay solución en la raíz
-- Sin `Directory.Packages.props` con `ManagePackageVersionsCentrally`
-- Sin `Directory.Build.props`
-- Faltan `.editorconfig`, `.gitattributes`, `global.json` y `LICENSE`
-- Sin manifiesto de herramientas locales (`.config`)
-- Sin `specs/Package.md` ni `specs/PublicApi.md`
-
-**Metadata** (7)
-
-- Declara `<Version>1.0.0</Version>` en vez de `<VersionPrefix>`
-- Sin `<PackageReadmeFile>`, `<PackageIcon>` ni `<Title>`
-- La licencia se declara como expresión SPDX, no como archivo empaquetado
-- Sin `<GenerateDocumentationFile>` ni `<IncludeSymbols>`
-
-**Documentación** (1)
-
-- Sin `README.md`
-
-**Calidad** (1)
-
-- No se pudo medir: el proyecto no compila en su estado actual
-  (`NETSDK1013: El valor de TargetFramework "" no se reconoció`). Se vuelve a medir tras la
-  etapa de estructura, que es la que aporta el `<TargetFramework>`.
+El paquete **cumple el estándar entero**: estructura, metadata, README y 0 avisos de
+compilación. Lo único que falta es darlo de alta en el portafolio, que es el último paso.
 
 **Sitio** (3)
 
 - No está declarado en `specs/Packages.md`
-- Sin página `/Results`
-- Sin la ruta `Results` en `build-pages.sh`
+- Sin página `/Localizer` en el sitio
+- Sin la ruta `Localizer` en `build-pages.sh`
 
-> El alta en el portafolio es el **último** paso: primero el paquete cumple el estándar,
-> después se documenta aquí.
+> Es el primer paquete **extraído** del monorepo, no solo homologado: se movieron su proyecto y
+> sus dos aplicaciones de verificación, se creó el repositorio desde cero y se retiró del
+> monorepo junto con su workflow. El monorepo quedó con 21 borrados y su `.sln` modificado, sin
+> commitear.
 
 ## Qué mide esta auditoría, y qué no
 
@@ -121,16 +102,13 @@ Sí mide:
 
 - **La etapa de calidad**, compilando cada paquete con `Nullable` y `GenerateDocumentationFile`
   forzados, porque son las dos propiedades que la homologación enciende y sin ellas un
-  repositorio heredado compila limpio y oculta el trabajo real. En `DomainValidation` fueron
-  91 miembros públicos sin documentar y 21 avisos de nulabilidad: **a escala de la flota es el
-  coste dominante**.
-- **Si la compilación falla**, y entonces lo dice en lugar de reportar cero avisos. Corregido
-  el 2026-08-19, tras detectar que `Persiltech.Results` salía con `0 avisos` de una compilación
-  que ni siquiera arrancaba.
+  repositorio heredado compila limpio y oculta el trabajo real.
+- **Si la compilación falla**, y entonces lo dice en lugar de reportar cero avisos.
+- **Las secciones canónicas del README en español o en inglés**, porque el estándar exige que
+  el README esté en el mismo idioma que el `<Description>`. Corregido el 2026-08-19, tras
+  reportar como ausentes cuatro secciones que `Persiltech.Localizer` sí tenía, en inglés.
 
 No mide, y nunca supone:
 
-- **Qué versiones están publicadas en nuget.org.** El `.csproj` dice qué se publicará la
-  próxima vez, no qué se publicó.
 - **Si un repositorio de GitHub es público**, ni **qué titular debe llevar una licencia** cuando
   el `LICENSE` y el `<Copyright>` no coinciden. Ambas salen como preguntas al usuario.

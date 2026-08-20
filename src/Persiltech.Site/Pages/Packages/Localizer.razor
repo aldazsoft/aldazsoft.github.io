@@ -1,0 +1,268 @@
+@page "/Localizer"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Localizer</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Lee valores traducidos desde archivos de recursos <code>.resx</code> con acceso
+        fuertemente tipado. La cultura sale del hilo actual —la que ASP.NET Core ya haya
+        resuelto para la petición— o de la que se indique en la llamada, sin dejar el hilo
+        alterado.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        <code>TEntity</code> es un marcador: nunca se instancia. Lo que importa es su
+        <strong>nombre</strong>, porque es lo que empareja la clase con sus archivos de
+        recursos. El localizador se construye una vez por tipo genérico cerrado y se guarda en
+        un campo estático, así que no se reconstruye en cada lectura.
+    </MudText>
+
+    <CalloutCard Icon="@Icons.Material.Outlined.Info" Title="Una clave sin traducción devuelve la clave">
+        Es cómo <code>IStringLocalizer</code> señala que falta la entrada. El paquete no lanza
+        ni sustituye por un valor propio, así que el texto que ve el usuario final es el nombre
+        de la clave — señal inequívoca de que falta traducir.
+    </CalloutCard>
+
+    <SectionHeading Text="Nombrar los archivos de recursos" />
+    <MudText Typo="Typo.body1">
+        El nombre de cada archivo sigue el formato
+        <code>{Extractor}.{Cultura}.resx</code>:
+    </MudText>
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Label">
+            <strong>Extractor</strong> — el nombre de la clase que lee el archivo
+            (Ej. <code>Messages</code>).
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Language">
+            <strong>Cultura</strong> — el identificador de cultura
+            (Ej. <code>en-US</code>, <code>es-PE</code>).
+        </MudListItem>
+    </MudList>
+    <MudText Typo="Typo.body1">
+        Así, una clase <code>Messages</code> lee de <code>Messages.en-US.resx</code> y
+        <code>Messages.es-PE.resx</code>. En cada archivo se crea una entrada con
+        <strong>la misma clave</strong> y el valor en su idioma:
+    </MudText>
+    <MudSimpleTable Dense="true" Hover="true" Bordered="false" Striped="false" Class="my-4">
+        <thead>
+            <tr>
+                <th>Clave</th>
+                <th>Valor en <code>en-US</code></th>
+                <th>Valor en <code>es-PE</code></th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>Hello</code></td>
+                <td>Hello World!</td>
+                <td>¡Hola Mundo!</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">
+        Después se declara la clase que expone cada clave:
+    </MudText>
+    <CodeBlock Code="@MessagesCode" Caption="Messages.cs" />
+    <MudText Typo="Typo.body1">
+        Y ya se puede usar. El valor sigue a la cultura de interfaz del hilo:
+    </MudText>
+    <CodeBlock Code="@UsageCode" />
+
+    <SectionHeading Text="Leer un valor en otra cultura" />
+    <MudText Typo="Typo.body1">
+        Cuando hace falta un valor concreto en una cultura distinta sin tocar el hilo, se pasa
+        la cultura en la llamada. Por dentro se aplica con un <code>CultureScope</code>, que
+        restaura la anterior al terminar —incluso si la lectura lanza—:
+    </MudText>
+    <CodeBlock Code="@CultureCode" />
+    <MudText Typo="Typo.body1">
+        <code>CultureScope</code> es público, así que también sirve para ejecutar un bloque
+        entero bajo una cultura:
+    </MudText>
+    <CodeBlock Code="@ScopeCode" />
+
+    <SectionHeading Text="En una aplicación ASP.NET Core" />
+    <MudText Typo="Typo.body1">
+        Se configura el middleware de localización para que la cultura se resuelva por petición:
+    </MudText>
+    <CodeBlock Code="@AspNetCode" Caption="Program.cs" />
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Los archivos de recursos se emparejan por el <strong>nombre de
+            <code>TEntity</code></strong>, no por configuración.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El localizador se construye una vez por tipo genérico cerrado y se cachea.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Una clave ausente devuelve la clave, en lugar de lanzar o inventar un valor.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <code>CultureScope</code> cambia <code>CurrentCulture</code> y
+            <code>CurrentUICulture</code>, y restaura ambas.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Fuera de alcance" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Registro en el contenedor de dependencias: el acceso es estático y no hay nada que
+            registrar.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            El middleware de localización de ASP.NET Core, que corresponde a la aplicación
+            consumidora.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Crear o escribir archivos de recursos: el paquete solo lee.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1"><code>@package.TargetFramework</code></MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete. La
+        superficie pública no ha cambiado desde <code>1.0.0</code>.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Localizer";
+
+    private const string ContractCode = """
+        namespace Persiltech.Localizer;
+
+        public class LocalizationUtils<TEntity>
+        {
+            public static string GetValue(string field);
+            public static string GetValue(string field, CultureInfo cultureinfo);
+        }
+
+        public class CultureScope : IDisposable
+        {
+            public CultureScope(CultureInfo culture);
+            public void Dispose();
+        }
+        """;
+
+    private const string MessagesCode = """
+        using Persiltech.Localizer;
+
+        public class Messages
+        {
+            public static string Hello =>
+                LocalizationUtils<Messages>.GetValue(nameof(Hello));
+        }
+        """;
+
+    private const string UsageCode = """
+        using System.Globalization;
+
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("en-US");
+        Console.WriteLine(Messages.Hello);   // Hello World!
+
+        Thread.CurrentThread.CurrentUICulture = new CultureInfo("es-PE");
+        Console.WriteLine(Messages.Hello);   // ¡Hola Mundo!
+        """;
+
+    private const string CultureCode = """
+        var greeting = LocalizationUtils<Messages>.GetValue(
+            nameof(Messages.Hello), new CultureInfo("es-PE"));
+        """;
+
+    private const string ScopeCode = """
+        using (new CultureScope(new CultureInfo("es-PE")))
+        {
+            // Todo lo de aquí dentro ve es-PE, en este hilo.
+        }
+        """;
+
+    private const string AspNetCode = """
+        var builder = WebApplication.CreateBuilder(args);
+
+        builder.Services.Configure<RequestLocalizationOptions>(options =>
+        {
+            var supportedCultures = new[] { "en-US", "es-PE" };
+            var neutralCulture = supportedCultures[0];
+
+            options.SetDefaultCulture(neutralCulture)
+                .AddSupportedCultures(supportedCultures)
+                .AddSupportedUICultures(supportedCultures);
+        });
+
+        var app = builder.Build();
+
+        app.UseRequestLocalization();
+
+        app.MapGet("/localizer/message", () => Results.Ok(Messages.Hello))
+           .WithName("Localizer");
+
+        app.Run();
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "static string GetValue(string field)",
+            "Lee el valor para la cultura de interfaz del hilo actual. Si ningún recurso la aporta, devuelve la propia clave."),
+        new ContractMember(
+            "static string GetValue(string field, CultureInfo cultureinfo)",
+            "Lee el valor para una cultura concreta, sin dejar alterada la del hilo."),
+        new ContractMember(
+            "CultureScope(CultureInfo culture)",
+            "Aplica la cultura al hilo actual y recuerda la anterior."),
+        new ContractMember(
+            "void CultureScope.Dispose()",
+            "Restaura la cultura que el hilo tenía antes de crear el ámbito.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

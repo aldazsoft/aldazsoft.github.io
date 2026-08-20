@@ -15,6 +15,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.1.12", "Publica la versión que la etiqueta v0.1.12 no llegó a subir."),
             new PackageRelease("0.1.11", "Apartado de licencia retirado del README; ya lo publica nuget.org."),
             new PackageRelease("0.1.10", "Historial de versiones al día en el README."),
             new PackageRelease("0.1.9", "Insignia de licencia enlazada al texto real, no a la plantilla."),
@@ -41,6 +42,17 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("0.1.0", "Primera publicación del adaptador HttpContextUserService.")
         ]);
 
+    private static readonly NuGetPackage Localizer = new(
+        Id: "Persiltech.Localizer",
+        Route: "/Localizer",
+        Summary: "Acceso fuertemente tipado a archivos de recursos .resx, resuelto desde la cultura de la interfaz del hilo o desde la que se indique.",
+        TargetFramework: "net10.0",
+        IsPrerelease: false,
+        Releases:
+        [
+            new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de LocalizationUtils y CultureScope.")
+        ]);
+
     private static readonly NuGetPackage DomainValidation = new(
         Id: "Persiltech.DomainValidation",
         Route: "/DomainValidation",
@@ -49,15 +61,16 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
+            new PackageRelease("2.0.2", "Renueva el icono del paquete, que es lo único que cambia de cara al consumidor: pesa la mitad (12 401 → 6 575 bytes) con la misma resolución de 128 × 128. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("2.0.1", "Corrige el historial de versiones, que listaba una 1.0.2 y una 1.0.3 que se prepararon pero nunca llegaron a nuget.org. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("2.0.0", "La evaluación deja de guardar estado: las especificaciones devuelven sus errores en lugar de dejarlos en una propiedad, así que una instancia compartida ya no devuelve el veredicto de otra entidad. El recorrido pasa a ser asíncrono de extremo a extremo y acepta CancellationToken. Nuevas MustAsync y AsyncSpecification, sobrecargas de comparación para anulables por valor, DependencyContainer renombrado a DependencyInjection y erratas corregidas."),
             new PackageRelease("1.0.1", "Primera versión disponible en nuget.org; reemplaza a la 1.0.0, retirada del listado.")
         ]);
 
-    // El contrato va primero y su adaptador después: es el orden en que se leen.
-    // DomainValidation cierra la lista: no depende de los otros dos.
+    // El contrato va primero y su adaptador después, y una dependencia antes que quien la
+    // consume: es el orden en que se leen encadenados.
     private static readonly IReadOnlyList<NuGetPackage> Packages =
-        [UserServicesAbstractions, UserServices, DomainValidation];
+        [UserServicesAbstractions, UserServices, Localizer, DomainValidation];
 
     /// <inheritdoc />
     public IReadOnlyList<NuGetPackage> GetAll() => Packages;

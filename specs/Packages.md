@@ -25,6 +25,10 @@ packages:
     route: UserServices
     path: UserServices
 
+  - id: Persiltech.Localizer
+    route: Localizer
+    path: Localizer
+
   - id: Persiltech.DomainValidation
     route: DomainValidation
     path: Persiltech.DomainValidation
