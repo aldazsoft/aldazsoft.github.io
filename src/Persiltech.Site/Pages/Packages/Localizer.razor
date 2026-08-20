@@ -102,6 +102,11 @@ else
         Se configura el middleware de localización para que la cultura se resuelva por petición:
     </MudText>
     <CodeBlock Code="@AspNetCode" Caption="Program.cs" />
+    <MudText Typo="Typo.body1">
+        A partir de ahí el valor sigue a la cultura negociada en cada petición, así que el mismo
+        endpoint responde <code>Hello World!</code> a <code>Accept-Language: en-US</code> y
+        <code>¡Hola Mundo!</code> a <code>Accept-Language: es-PE</code>.
+    </MudText>
 
     <SectionHeading Text="Decisiones de diseño" />
     <MudList T="string" Dense="true">
@@ -227,10 +232,9 @@ else
 
         builder.Services.Configure<RequestLocalizationOptions>(options =>
         {
-            var supportedCultures = new[] { "en-US", "es-PE" };
-            var neutralCulture = supportedCultures[0];
+            string[] supportedCultures = ["en-US", "es-PE"];
 
-            options.SetDefaultCulture(neutralCulture)
+            options.SetDefaultCulture(supportedCultures[0])
                 .AddSupportedCultures(supportedCultures)
                 .AddSupportedUICultures(supportedCultures);
         });
@@ -239,8 +243,7 @@ else
 
         app.UseRequestLocalization();
 
-        app.MapGet("/localizer/message", () => Results.Ok(Messages.Hello))
-           .WithName("Localizer");
+        app.MapGet("/localizer/message", () => Results.Ok(Messages.Hello));
 
         app.Run();
         """;
