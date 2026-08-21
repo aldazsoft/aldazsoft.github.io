@@ -36,6 +36,7 @@ routes=(
   "packages|Paquetes|Librerías .NET publicadas en nuget.org, con su documentación y su canal de soporte."
   "UserServices.Abstractions|Persiltech.UserServices.Abstractions|El Output Port IUserService: estado de autenticación e identidad del usuario actual para soluciones con Arquitectura Limpia."
   "UserServices|Persiltech.UserServices|El adaptador de ASP.NET Core para IUserService: resuelve la identidad y el estado de autenticación desde HttpContext.User."
+  "Blazor.JSInterop|Persiltech.Blazor.JSInterop|Clases base para los servicios de Blazor que cargan un módulo de JavaScript o de WebAssembly por JSInterop, con importación perezosa y liberación con el componente."
   "Localizer|Persiltech.Localizer|Acceso fuertemente tipado a archivos de recursos .resx, resuelto desde la cultura de la interfaz del hilo o desde la que se indique."
   "DomainValidation|Persiltech.DomainValidation|Validación de reglas de negocio con el patrón Specification: reglas fluidas por propiedad, evaluación asíncrona y errores reunidos en un ValidationResult."
   "about|Trayectoria|Experiencia, tecnologías y forma de trabajar de Edinson Aldaz."

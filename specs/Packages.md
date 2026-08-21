@@ -25,6 +25,10 @@ packages:
     route: UserServices
     path: UserServices
 
+  - id: Persiltech.Blazor.JSInterop
+    route: Blazor.JSInterop
+    path: Blazor.JSInterop
+
   - id: Persiltech.Localizer
     route: Localizer
     path: Localizer

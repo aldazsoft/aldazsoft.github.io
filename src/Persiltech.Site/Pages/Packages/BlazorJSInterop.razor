@@ -1,0 +1,303 @@
+@page "/Blazor.JSInterop"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Blazor.JSInterop</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Las clases base de las que heredan los servicios de Blazor que llaman a un módulo de
+        JavaScript o a un módulo de WebAssembly. Importan el módulo <strong>una sola vez y de
+        forma perezosa</strong>, exponen llamadas tipadas sobre él y lo liberan con el
+        componente.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+    <MudText Typo="Typo.body1">
+        Solo arrastra <code>Microsoft.JSInterop</code> y
+        <code>Microsoft.Extensions.Logging.Abstractions</code>.
+    </MudText>
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+
+    <CalloutCard Icon="@Icons.Material.Outlined.WarningAmber" IconColor="Color.Warning" Title="Los fallos se registran, no se lanzan">
+        Cuando una llamada al módulo falla, la excepción va al registro y
+        <code>InvokeAsync&lt;T&gt;</code> devuelve <code>default(T)</code>;
+        <code>InvokeVoidAsync</code> retorna como si hubiera funcionado. Comprueba el resultado
+        antes de usarlo. Cada fallo deja <strong>una sola</strong> entrada, con la excepción, el
+        módulo y el método que se llamó.
+    </CalloutCard>
+
+    <SectionHeading Text="Cómo se comporta la carga" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Bolt">
+            El módulo se importa en la <strong>primera llamada</strong>, no al construir el
+            servicio, y la referencia se reutiliza. Un servicio que nunca se usa no descarga
+            nada, y entonces <code>DisposeAsync</code> no tiene nada que liberar.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Replay">
+            Una <strong>importación fallida no se cachea</strong>: la siguiente llamada vuelve a
+            intentarlo. Importa cuando la primera cae donde el navegador aún no está disponible
+            —el prerender de Blazor Server, sobre todo—, porque si no el servicio quedaría muerto
+            el resto del ámbito.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.PowerOff">
+            <code>DisposeAsync</code> tolera un circuito ya cerrado, así que liberar el servicio
+            al final de un circuito de Blazor Server nunca sale como error.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.HourglassDisabled">
+            <code>DisposeAsync</code> <strong>no espera</strong> a una llamada en vuelo. La
+            referencia que esa llamada está importando se libera en cuanto llega, y la llamada
+            termina como omitida: devuelve el valor predeterminado y deja una entrada
+            <code>Debug</code>, no un error.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Un módulo de JavaScript" />
+    <MudText Typo="Typo.body1">
+        Se escribe el módulo y se exporta lo que se quiera llamar. Este resuelve las coordenadas
+        del usuario:
+    </MudText>
+    <CodeBlock Code="@ModuleCode" Caption="geolocationModule.js" />
+    <MudText Typo="Typo.body1">
+        Después se deriva un servicio de <code>JSLoaderServiceBase</code> pasándole la ruta del
+        módulo. Todo lo demás es tu propia API sobre <code>InvokeAsync</code>:
+    </MudText>
+    <CodeBlock Code="@ServiceCode" Caption="GeolocationService.cs" />
+    <MudText Typo="Typo.body1">
+        <code>ILogger&lt;T&gt;</code> es covariante, así que puedes declarar el registrador de tu
+        propio tipo y pasarlo tal cual a la clase base. Se registra como cualquier servicio:
+    </MudText>
+    <CodeBlock Code="@RegistrationCode" />
+    <MudText Typo="Typo.body1">Y se usa desde el componente:</MudText>
+    <CodeBlock Code="@ComponentCode" Caption="GetPosition.razor" />
+
+    <SectionHeading Text="Un módulo de WebAssembly" />
+    <MudText Typo="Typo.body1">
+        <code>WasmLoaderServiceBase</code> recibe dos rutas: la del cargador de JavaScript que
+        instancia el módulo y la del propio <code>.wasm</code>. El paquete publica un cargador
+        listo para usar en
+        <code>./_content/Persiltech.Blazor.JSInterop/wasmModuleLoader.js</code>:
+    </MudText>
+    <CodeBlock Code="@WasmCode" Caption="AddWasmService.cs" />
+    <MudText Typo="Typo.body1">
+        Una vez instanciado el módulo de WebAssembly, el cargador se libera: solo se conserva la
+        instancia, que es adonde van las llamadas — y se libera también si la instanciación
+        falla. Si tu cargador exporta la función con otro nombre, pásalo como último argumento;
+        por omisión es <code>wasmLoader</code>.
+    </MudText>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            La importación es perezosa y la referencia se reutiliza; una importación fallida no
+            se cachea.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Los fallos de JSInterop se registran y se tragan, de modo que una llamada rota
+            devuelve un valor predeterminado en lugar de lanzar.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Sobrescribe <code>ResolveTargetAsync</code> para dirigir las llamadas a algo distinto
+            del propio módulo: es como <code>WasmLoaderServiceBase</code> las apunta a la
+            instancia de WebAssembly.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Fuera de alcance" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Registro en el contenedor de dependencias: cada servicio derivado decide su tiempo de
+            vida.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Escribir el módulo de JavaScript o compilar el <code>.wasm</code>. Ambos corresponden
+            al consumidor.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>, para aplicaciones Blazor.
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Blazor.JSInterop";
+
+    private const string ContractCode = """
+        namespace Persiltech.Blazor.JSInterop;
+
+        public abstract class JSLoaderServiceBase : IAsyncDisposable
+        {
+            protected JSLoaderServiceBase(ILogger logger, IJSRuntime jsRuntime, string jsModulePath);
+
+            protected Task<T?> InvokeAsync<T>(string methodName, params object?[]? parameters);
+            protected Task InvokeVoidAsync(string methodName, params object?[]? parameters);
+
+            protected virtual ValueTask<IJSObjectReference> ResolveTargetAsync(IJSObjectReference jsModule);
+
+            public virtual ValueTask DisposeAsync();
+        }
+
+        public abstract class WasmLoaderServiceBase : JSLoaderServiceBase
+        {
+            protected WasmLoaderServiceBase(
+                ILogger logger,
+                IJSRuntime jsRuntime,
+                string jsModulePath,
+                string wasmModulePath,
+                string wasmLoader = "wasmLoader");
+
+            protected override ValueTask<IJSObjectReference> ResolveTargetAsync(IJSObjectReference jsModule);
+        }
+        """;
+
+    private const string ModuleCode = """
+        const getPosition = () => {
+            return new Promise((resolve, reject) => {
+                if ("geolocation" in navigator) {
+                    navigator.geolocation.getCurrentPosition(returnPosition, returnError);
+                }
+
+                function returnPosition(position) {
+                    resolve({
+                        latitude: position.coords.latitude,
+                        longitude: position.coords.longitude
+                    });
+                }
+
+                function returnError(error) {
+                    reject(error.message);
+                }
+            });
+        }
+
+        export { getPosition };
+        """;
+
+    private const string ServiceCode = """
+        using Microsoft.Extensions.Logging;
+        using Microsoft.JSInterop;
+        using Persiltech.Blazor.JSInterop;
+
+        public record struct GeolocationLatLong(double Latitude, double Longitude);
+
+        public class GeolocationService(
+            ILogger<GeolocationService> logger,
+            IJSRuntime jsRuntime) : JSLoaderServiceBase(
+                logger,
+                jsRuntime,
+                "./js/geolocationModule.js")
+        {
+            public async ValueTask<GeolocationLatLong> GetPosition() =>
+                await InvokeAsync<GeolocationLatLong>("getPosition");
+        }
+        """;
+
+    private const string RegistrationCode = """
+        builder.Services.AddScoped<GeolocationService>();
+        """;
+
+    private const string ComponentCode = """
+        @page "/get-position"
+        @inject GeolocationService Geolocation
+
+        <button class="btn btn-primary mb-2" @onclick="ShowPosition">Show my position</button>
+        <textarea class="form-control" rows="3" disabled @bind="message"></textarea>
+
+        @code {
+            private string message = string.Empty;
+
+            private async Task ShowPosition()
+            {
+                var coords = await Geolocation.GetPosition();
+                message = $"Latitude: {coords.Latitude}, Longitude: {coords.Longitude}";
+            }
+        }
+        """;
+
+    private const string WasmCode = """
+        using Microsoft.Extensions.Logging;
+        using Microsoft.JSInterop;
+        using Persiltech.Blazor.JSInterop;
+
+        public class AddWasmService(
+            ILogger<AddWasmService> logger,
+            IJSRuntime jsRuntime) : WasmLoaderServiceBase(
+                logger,
+                jsRuntime,
+                "./_content/Persiltech.Blazor.JSInterop/wasmModuleLoader.js",
+                "./wasm/add.wasm")
+        {
+            public async Task<int> Add(int firstAddend, int secondAddend) =>
+                await InvokeAsync<int>("add", firstAddend, secondAddend);
+        }
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "abstract class JSLoaderServiceBase : IAsyncDisposable",
+            "Base de un servicio que llama a un módulo de JavaScript. Importa el módulo en la primera llamada y lo reutiliza."),
+        new ContractMember(
+            "abstract class WasmLoaderServiceBase : JSLoaderServiceBase",
+            "Base de un servicio que llama a un módulo de WebAssembly instanciado desde JavaScript."),
+        new ContractMember(
+            "protected Task<T?> InvokeAsync<T>(string methodName, params object?[]? parameters)",
+            "Llama a una función del módulo y devuelve su resultado, o default(T) si falló."),
+        new ContractMember(
+            "protected Task InvokeVoidAsync(string methodName, params object?[]? parameters)",
+            "Llama a una función del módulo que no devuelve nada."),
+        new ContractMember(
+            "protected virtual ValueTask<IJSObjectReference> ResolveTargetAsync(IJSObjectReference jsModule)",
+            "Resuelve la referencia a la que se dirigen las llamadas. Por omisión, el propio módulo."),
+        new ContractMember(
+            "public virtual ValueTask DisposeAsync()",
+            "Libera el módulo si llegó a importarse. No espera a una llamada en vuelo.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

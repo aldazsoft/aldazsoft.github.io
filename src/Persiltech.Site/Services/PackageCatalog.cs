@@ -42,6 +42,19 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("0.1.0", "Primera publicación del adaptador HttpContextUserService.")
         ]);
 
+    private static readonly NuGetPackage BlazorJSInterop = new(
+        Id: "Persiltech.Blazor.JSInterop",
+        Route: "/Blazor.JSInterop",
+        Summary: "Clases base para los servicios de Blazor que cargan un módulo de JavaScript o de WebAssembly por JSInterop, con importación perezosa y liberación con el componente.",
+        TargetFramework: "net10.0",
+        IsPrerelease: false,
+        Releases:
+        [
+            new PackageRelease("1.1.1", "Liberar el servicio mientras su primera llamada aún importa el módulo ya no filtra la referencia, y una llamada en vuelo no falla al salir. Una llamada que sobrevive a su servicio se registra como Debug, no como error. Los constructores documentan las excepciones que lanzan."),
+            new PackageRelease("1.1.0", "Corrige el wasmModuleLoader.js empaquetado, que viajaba truncado y no se podía importar. Una importación fallida deja de cachearse: la siguiente llamada reintenta en vez de dejar el servicio muerto. DisposeAsync tolera un circuito caído. WasmLoaderServiceBase pasa a ser abstract, deriva de JSLoaderServiceBase y acepta un ILogger plano. La dependencia se estrecha a Microsoft.JSInterop y Microsoft.Extensions.Logging.Abstractions."),
+            new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de JSLoaderServiceBase y WasmLoaderServiceBase.")
+        ]);
+
     private static readonly NuGetPackage Localizer = new(
         Id: "Persiltech.Localizer",
         Route: "/Localizer",
@@ -50,6 +63,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
+            new PackageRelease("1.0.2", "El paquete pasa a su propio repositorio y solución, fuera del monorepo compartido. La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. Sin cambios en la API pública."),
             new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de LocalizationUtils y CultureScope.")
         ]);
 
@@ -70,7 +84,7 @@ public sealed class PackageCatalog : IPackageCatalog
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
     private static readonly IReadOnlyList<NuGetPackage> Packages =
-        [UserServicesAbstractions, UserServices, Localizer, DomainValidation];
+        [UserServicesAbstractions, UserServices, BlazorJSInterop, Localizer, DomainValidation];
 
     /// <inheritdoc />
     public IReadOnlyList<NuGetPackage> GetAll() => Packages;
