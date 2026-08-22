@@ -53,7 +53,7 @@ else
     </MudText>
     <CodeBlock Code="@MatchCode" />
 
-    <CalloutCard Icon="@Icons.Material.Outlined.WarningAmber" Title="Result&lt;TSuccess&gt;.Value no está protegida">
+    <CalloutCard Icon="@Icons.Material.Outlined.WarningAmber" Title="Result<TSuccess>.Value no está protegida">
         En un resultado fallido devuelve el valor predeterminado de <code>TSuccess</code> en lugar
         de lanzar, así que hay que comprobar <code>IsSuccess</code> antes — o usar
         <code>Match</code>, que es en parte por lo que existen estas extensiones.
