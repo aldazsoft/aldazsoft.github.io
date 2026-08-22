@@ -37,6 +37,10 @@ packages:
     route: Localizer
     path: Localizer
 
+  - id: Persiltech.Results
+    route: Results
+    path: Results
+
   - id: Persiltech.DomainValidation
     route: DomainValidation
     path: Persiltech.DomainValidation

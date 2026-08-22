@@ -1,0 +1,280 @@
+@page "/Results"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Results</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Una implementación del patrón <em>Result</em>: la operación devuelve su éxito o su fallo
+        <strong>como valor</strong>, con mensajes de error localizados, en lugar de lanzar una
+        excepción para un desenlace que ya se esperaba.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="El contrato" />
+    <MudText Typo="Typo.body1">
+        Hay <strong>tres formas de resultado</strong>, según lo que la operación tenga que
+        devolver.
+    </MudText>
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+
+    <MudText Typo="Typo.body1">
+        Las dos primeras comparten <code>ResultBase</code>, que es quien lleva los fallos:
+    </MudText>
+    <CodeBlock Code="@ResultBaseCode" />
+    <MudText Typo="Typo.body1">
+        Vale la pena rellenar <code>Code</code> cuando el llamador tiene que
+        <strong>decidir</strong> sobre el fallo: se mantiene estable mientras que
+        <code>Message</code> puede estar traducido.
+    </MudText>
+
+    <CalloutCard Icon="@Icons.Material.Outlined.Lock" Title="Los resultados no se construyen con new">
+        Salen de <code>Success</code> o de <code>Fail</code>, así que un resultado nace siempre en
+        uno de los dos estados y nunca a medias.
+    </CalloutCard>
+
+    <SectionHeading Text="Devolver un resultado" />
+    <CodeBlock Code="@ReturnCode" />
+
+    <SectionHeading Text="Leerlo sin equivocarse de rama" />
+    <MudText Typo="Typo.body1">
+        <code>Match</code> obliga a atender las dos ramas, así que no hay forma de leer la que no
+        toca:
+    </MudText>
+    <CodeBlock Code="@MatchCode" />
+
+    <CalloutCard Icon="@Icons.Material.Outlined.WarningAmber" Title="Result&lt;TSuccess&gt;.Value no está protegida">
+        En un resultado fallido devuelve el valor predeterminado de <code>TSuccess</code> en lugar
+        de lanzar, así que hay que comprobar <code>IsSuccess</code> antes — o usar
+        <code>Match</code>, que es en parte por lo que existen estas extensiones.
+    </CalloutCard>
+
+    <SectionHeading Text="Encadenar sin comprobaciones intermedias" />
+    <MudText Typo="Typo.body1">
+        <code>Result&lt;TSuccess, TError&gt;</code> es la variante ferroviaria: cada paso se
+        ejecuta solo si el anterior salió bien, y el primer fallo cortocircuita el resto.
+    </MudText>
+    <CodeBlock Code="@ChainCode" />
+    <ContractMemberTable Members="RailwayMembers" />
+
+    <MudText Typo="Typo.body1">
+        Como define conversiones implícitas, se puede devolver directamente el valor o el error:
+    </MudText>
+    <CodeBlock Code="@ImplicitCode" />
+    <MudText Typo="Typo.body1">
+        Con <code>TSuccess</code> y <code>TError</code> del mismo tipo la conversión sería
+        ambigua; ahí hay que usar <code>Success</code> y <code>Fail</code> de forma explícita.
+    </MudText>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Los resultados se crean <strong>solo</strong> con <code>Success</code> y
+            <code>Fail</code>, nunca con <code>new</code>.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <code>Result&lt;TSuccess, TError&gt;</code> <strong>lanza al leer la rama
+            equivocada</strong>, con un mensaje localizado por <code>Persiltech.Localizer</code>.
+            Leer el valor de un resultado fallido es un error de programación, no un caso que
+            valga la pena representar.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <code>Map</code>, <code>Bind</code>, <code>OnSuccess</code> y <code>OnFailure</code>
+            cortocircuitan, así que una cadena no necesita ni una comprobación intermedia del
+            llamador.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Las extensiones dan a las tres formas el mismo <code>Match</code>, para que se
+            consuman igual.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Fuera de alcance" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Registro en el contenedor de dependencias: no hay servicios que registrar.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Convertir excepciones en resultados, o al revés. Eso lo decide el consumidor.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Agregar resultados de varias operaciones en uno solo.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+    <MudText Typo="Typo.body1">
+        Este paquete <strong>sustituye a <code>Persiltech.Result</code></strong> (en singular),
+        que ya no se mantiene.
+    </MudText>
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Results";
+
+    private const string ContractCode = """
+        namespace Persiltech.Results;
+
+        // Sin valor. Solo si salió bien, y por qué no.
+        public sealed class Result : ResultBase
+        {
+            public static Result Success();
+            public static Result Fail(params Error[] errors);
+            public static Result Fail(string errorMessage);
+        }
+
+        // Con valor solo en la rama correcta.
+        public sealed class Result<TSuccess> : ResultBase
+        {
+            public TSuccess Value { get; }
+
+            public static Result<TSuccess> Success(TSuccess value);
+            public static Result<TSuccess> Fail(params Error[] errors);
+            public static Result<TSuccess> Fail(string errorMessage);
+        }
+
+        // Con valor propio en cada rama. Es la variante ferroviaria.
+        public sealed class Result<TSuccess, TError>
+        {
+            public TSuccess Value { get; }   // lanza si el resultado es fallido
+            public TError Error { get; }     // lanza si el resultado es correcto
+            public bool IsSuccess { get; }
+            public bool IsFailure { get; }
+        }
+        """;
+
+    private const string ResultBaseCode = """
+        public class ResultBase
+        {
+            public Error[] Errors { get; }
+            public Error? Error { get; }          // el primero, o null
+            public string? ErrorMessage { get; }  // su mensaje, o null
+            public bool IsFailure { get; }
+            public bool IsSuccess { get; }
+        }
+
+        public class Error(string? code, string message)
+        {
+            public string? Code { get; }
+            public string Message { get; }
+        }
+        """;
+
+    private const string ReturnCode = """
+        using Persiltech.Results;
+
+        public Result<Customer> FindCustomer(int id)
+        {
+            var customer = repository.Find(id);
+
+            return customer is null
+                ? Result<Customer>.Fail(new Error("customer.not-found", "No such customer."))
+                : Result<Customer>.Success(customer);
+        }
+        """;
+
+    private const string MatchCode = """
+        using Persiltech.Results.Extensions;
+
+        string message = FindCustomer(id).Match(
+            onSuccess: customer => $"Found {customer.Name}.",
+            onError: result => result.ErrorMessage ?? "Unknown failure.");
+        """;
+
+    private const string ChainCode = """
+        Result<Invoice, Error> result = FindOrder(orderId)
+            .Bind(order => ValidateStock(order))
+            .Map(order => BuildInvoice(order))
+            .OnSuccess(invoice => logger.LogInformation("Invoice {Id} issued", invoice.Id))
+            .OnFailure(error => logger.LogWarning("Could not issue: {Message}", error.Message));
+        """;
+
+    private const string ImplicitCode = """
+        public Result<Customer, Error> FindCustomer(int id)
+        {
+            var customer = repository.Find(id);
+
+            if (customer is null)
+            {
+                return new Error("customer.not-found", "No such customer.");
+            }
+
+            return customer;
+        }
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "sealed class Result",
+            "Sin valor: solo dice si la operación salió bien y, si no, por qué."),
+        new ContractMember(
+            "sealed class Result<TSuccess>",
+            "Lleva un valor en la rama correcta. Su Value no está protegido en la rama fallida."),
+        new ContractMember(
+            "sealed class Result<TSuccess, TError>",
+            "Un valor propio en cada rama. Lanza al leer la contraria, y es la que encadena."),
+        new ContractMember(
+            "class Error(string? code, string message)",
+            "El fallo: un código estable para decidir y un mensaje que puede estar traducido.")
+    ];
+
+    private static readonly IReadOnlyList<ContractMember> RailwayMembers =
+    [
+        new ContractMember("Map(mapper)", "Transforma el valor correcto. Un fallo pasa intacto."),
+        new ContractMember("MapError(mapper)", "Transforma el error. Un resultado correcto pasa intacto."),
+        new ContractMember("Bind(binder)", "Encadena otra operación que también devuelve un Result."),
+        new ContractMember("BindAsync(binder)", "La versión asíncrona de Bind."),
+        new ContractMember("OnSuccess(action)", "Ejecuta un efecto si salió bien y devuelve el mismo resultado."),
+        new ContractMember("OnFailure(action)", "Ejecuta un efecto si falló y devuelve el mismo resultado."),
+        new ContractMember("Match(onSuccess, onError)", "Reduce las dos ramas a un valor, o a una acción.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

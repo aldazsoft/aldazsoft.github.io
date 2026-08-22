@@ -92,10 +92,30 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("1.0.1", "Primera versión disponible en nuget.org; reemplaza a la 1.0.0, retirada del listado.")
         ]);
 
+    private static readonly NuGetPackage Results = new(
+        Id: "Persiltech.Results",
+        Route: "/Results",
+        Summary: "El patrón Result: una operación devuelve su éxito o su fallo como valor, con mensajes de error localizados, en lugar de lanzar excepciones para el flujo previsible.",
+        TargetFramework: "net10.0",
+        IsPrerelease: false,
+        Releases:
+        [
+            new PackageRelease("1.0.1", "El paquete pasa a su propio repositorio y solución, fuera del monorepo compartido. La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. El README se reescribió entero: el anterior tenía tres líneas y nombraba un paquete que no existe. Sin cambios en la API pública."),
+            new PackageRelease("1.0.0", "Primera publicación de Result, Result<TSuccess> y Result<TSuccess, TError>.")
+        ]);
+
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
     private static readonly IReadOnlyList<NuGetPackage> Packages =
-        [UserServicesAbstractions, UserServices, BlazorJSInterop, HttpDelegatingHandlers, Localizer, DomainValidation];
+        [
+            UserServicesAbstractions,
+            UserServices,
+            BlazorJSInterop,
+            HttpDelegatingHandlers,
+            Localizer,
+            Results,
+            DomainValidation
+        ];
 
     /// <inheritdoc />
     public IReadOnlyList<NuGetPackage> GetAll() => Packages;

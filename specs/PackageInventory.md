@@ -2,9 +2,9 @@
 # Generado por el skill audit-nuget-packages. Los conteos son del día de la auditoría.
 packagesRoot: E:\Repos\Github\aldazsoft\Persiltech\Packages
 siteUrl: https://aldazsoft.github.io
-audited: 2026-08-21
+audited: 2026-08-22
 totals:
-  listo: 4
+  listo: 6
   sin-página: 0
   calidad: 0
   documentacion: 1
@@ -28,26 +28,30 @@ calidad → sin-página` es el de trabajo, porque cada etapa se apoya en la ante
 | Paquete | Estado | Versión del proyecto | Pendientes |
 |---|---|---|---|
 | `Persiltech.Blazor.JSInterop` | `documentacion` | 1.1.1 | 1 |
+| `Persiltech.HttpDelegatingHandlers` | `listo` | 1.0.3 | 0 |
+| `Persiltech.Results` | `listo` | 1.0.1 | 0 |
 | `Persiltech.Localizer` | `listo` | 1.0.2 | 0 |
 | `Persiltech.DomainValidation` | `listo` | 2.0.2 | 0 |
 | `Persiltech.UserServices` | `listo` | 0.1.4 | 0 |
 | `Persiltech.UserServices.Abstractions` | `listo` | 0.1.12 | 0 |
 
 Las versiones son las que declara el `.csproj`. Todas coinciden con la última publicada en
-nuget.org, verificado el 2026-08-21 (ver *Resueltas*).
+nuget.org **salvo `Persiltech.HttpDelegatingHandlers`** (ver *Pendiente de publicar*),
+verificado el 2026-08-22 (ver *Resueltas*).
 
 ## Fuera de esta auditoría
 
-- **`Persiltech.Results`** sigue en el monorepo (`Persiltech/Src/Persiltech.Results`). Su
-  identidad ya está decidida: **sustituye al legacy `Persiltech.Result`** (singular, `1.0.6`),
-  al que tres proyectos del monorepo aún apuntan y que migrarán cuando toque. El CPM del
-  monorepo ya ofrece el plural, para que ningún proyecto nuevo caiga en el viejo por inercia.
-- Los **~78 paquetes restantes** del monorepo no se auditan hasta extraerlos: el plan espera
+- Los **76 paquetes restantes** del monorepo no se auditan hasta extraerlos: el plan espera
   **un paquete por repositorio** y no sabe leer una solución con decenas de proyectos.
 
 ## Pendiente de publicar
 
-Ninguno. Los cinco paquetes tienen su `<VersionPrefix>` igual a su última versión publicada.
+| Paquete | En el `.csproj` | En nuget.org | Qué sigue mostrando la ficha |
+|---|---|---|---|
+| `Persiltech.HttpDelegatingHandlers` | 1.0.3 | 1.0.2 | El README anterior a la homologación, y sin `PackageProjectUrl` a su página |
+
+Su página del portafolio **ya está publicada**, así que la `1.0.3` puede subirse cuando se
+quiera: el `<PackageProjectUrl>` que trae ya resuelve.
 
 ## Por confirmar
 
@@ -57,19 +61,25 @@ Ninguna abierta.
 
 - **Titular de la licencia para los paquetes que salen del monorepo** — el `LICENSE` del
   monorepo dice `2025 aldazsoft`. Se decidió **Persiltech** el 2026-08-19. **Vale para todos
-  los que se extraigan después**, y así se aplicó a `Localizer` y a `Blazor.JSInterop`.
+  los que se extraigan después**, y así se aplicó a `Localizer`, `Blazor.JSInterop`,
+  `HttpDelegatingHandlers` y `Results`.
 - **`Persiltech.DomainValidation`** — ¿es público `https://github.com/aldazsoft/DomainValidation`?
   **No** (2026-08-19). Metadata de repositorio retirada y SourceLink apagado. Su `LICENSE`
   declaraba a Miguel Muñoz Serafín (2025) frente al `<Copyright>` de Persiltech; se alineó a
   Persiltech, conservando el crédito del entrenamiento como atribución de origen.
-- **Versiones publicadas**, verificadas contra nuget.org el 2026-08-21:
+- **Versiones publicadas**, verificadas contra nuget.org el 2026-08-22:
   - `Persiltech.Blazor.JSInterop`: `1.0.0`, `1.0.1`, `1.1.0`, `1.1.1`
+  - `Persiltech.HttpDelegatingHandlers`: `1.0.0`, `1.0.1`, `1.0.2`
   - `Persiltech.Localizer`: `1.0.0`, `1.0.1`, `1.0.2`
+  - `Persiltech.Results`: `1.0.0`, `1.0.1`
   - `Persiltech.DomainValidation`: `1.0.1`, `2.0.0`, `2.0.1`, `2.0.2` listadas; `1.0.0`
     deslistada. Las `1.0.2` y `1.0.3` nunca se publicaron
   - `Persiltech.UserServices`: `0.1.0` – `0.1.4`
   - `Persiltech.UserServices.Abstractions`: `0.1.0` – `0.1.12`
-  - `Persiltech.Results`: `1.0.0`
+- **El legacy `Persiltech.Result`** (singular, `1.0.0` – `1.0.6`) queda sustituido por
+  `Persiltech.Results`. Tres proyectos del monorepo aún apuntan al viejo y migrarán cuando
+  toque; el CPM del monorepo ya ofrece el plural, para que ningún proyecto nuevo caiga en el
+  antiguo por inercia.
 
 ## Detalle
 
@@ -118,6 +128,9 @@ Sí mide:
   deja CI roto en la primera ejecución— y que `publish.yml` traiga la guarda que aborta si la
   etiqueta no coincide con `<VersionPrefix>`.
 - **Que el historial del README no liste versiones ausentes de nuget.org.**
+- **Que los verificadores y las pruebas se llamen por lo que son**: `.Sample` en `samples/`,
+  `.Tests` en `tests/`. Un verificador llamado `.Tests` hace que `dotnet test` pase en verde
+  sin ejecutar nada.
 
 No mide, y nunca supone:
 
