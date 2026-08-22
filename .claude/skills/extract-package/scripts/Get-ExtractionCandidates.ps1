@@ -134,7 +134,10 @@ foreach ($project in $projects) {
         internalPending = $internalPending
         files          = $files
         warnings       = $warnings
-        hasTests       = Test-Path (Join-Path $monorepoRoot "Tests/$name.Tests")
+        # El monorepo nombra a los acompañantes en plural y en singular: HttpDelegatingHandlers
+        # tiene un '.Test'. Buscar solo '.Tests' los daba por inexistentes.
+        hasTests       = @('Tests', 'Test') | Where-Object {
+            Test-Path (Join-Path $monorepoRoot "Tests/$name.$_") } | Select-Object -First 1 | ForEach-Object { $true }
         score          = $score
     }
 }

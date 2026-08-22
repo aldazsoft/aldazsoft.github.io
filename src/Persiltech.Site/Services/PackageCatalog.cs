@@ -55,6 +55,17 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de JSLoaderServiceBase y WasmLoaderServiceBase.")
         ]);
 
+    private static readonly NuGetPackage HttpDelegatingHandlers = new(
+        Id: "Persiltech.HttpDelegatingHandlers",
+        Route: "/HttpDelegatingHandlers",
+        Summary: "Dos delegating handlers para HttpClient: uno convierte la respuesta de error en excepción, el otro reenvía la cultura de la aplicación Blazor en cada petición.",
+        TargetFramework: "net10.0",
+        IsPrerelease: false,
+        Releases:
+        [
+            new PackageRelease("1.0.0 – 1.0.2", "Primeras publicaciones de ExceptionDelegatingHandler y LocalizationDelegatingHandler.")
+        ]);
+
     private static readonly NuGetPackage Localizer = new(
         Id: "Persiltech.Localizer",
         Route: "/Localizer",
@@ -84,7 +95,7 @@ public sealed class PackageCatalog : IPackageCatalog
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
     private static readonly IReadOnlyList<NuGetPackage> Packages =
-        [UserServicesAbstractions, UserServices, BlazorJSInterop, Localizer, DomainValidation];
+        [UserServicesAbstractions, UserServices, BlazorJSInterop, HttpDelegatingHandlers, Localizer, DomainValidation];
 
     /// <inheritdoc />
     public IReadOnlyList<NuGetPackage> GetAll() => Packages;

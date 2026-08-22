@@ -1,0 +1,260 @@
+@page "/HttpDelegatingHandlers"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.HttpDelegatingHandlers</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Dos <em>delegating handlers</em> para <code>HttpClient</code>. Uno convierte una
+        respuesta de error en excepción, de modo que el llamador deja de comprobar códigos de
+        estado en cada petición. El otro reenvía en cada petición la cultura que la aplicación
+        Blazor guardó en el navegador.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        Ambos sobrescriben <code>SendAsync</code>, que es <code>protected</code>: nunca se
+        invocan a mano. Se enlazan a un <code>HttpClient</code> y actúan solos.
+    </MudText>
+
+    <SectionHeading Text="Convertir los errores en excepciones" />
+    <MudText Typo="Typo.body1">
+        Se registra el manejador y se enlaza al cliente:
+    </MudText>
+    <CodeBlock Code="@RegistrationCode" Caption="Program.cs" />
+    <MudText Typo="Typo.body1">
+        A partir de ahí, una respuesta correcta pasa intacta y una de error lanza:
+    </MudText>
+    <MudSimpleTable Dense="true" Hover="true" Bordered="false" Striped="false" Class="my-4">
+        <thead>
+            <tr>
+                <th>Estado</th>
+                <th>Excepción</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>401</code>, <code>403</code></td>
+                <td><code>UnauthorizedAccessException</code></td>
+            </tr>
+            <tr>
+                <td>Cualquier otro error</td>
+                <td><code>HttpRequestException</code>, con el código de estado</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+
+    <CalloutCard Icon="@Icons.Material.Outlined.Unarchive" Title="El problem+json se reparte en la excepción">
+        Es lo que da valor al manejador. Cuando la respuesta es
+        <code>application/problem+json</code> y su <code>instance</code> empieza por
+        <code>problemdetails/</code>, sus partes acaban donde el llamador puede alcanzarlas, en
+        lugar de quedarse en una cadena JSON sin abrir.
+    </CalloutCard>
+
+    <MudSimpleTable Dense="true" Hover="true" Bordered="false" Striped="false" Class="my-4">
+        <thead>
+            <tr>
+                <th>Campo de la respuesta</th>
+                <th>Dónde acaba</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var field in ProblemDetailsMapping)
+            {
+                <tr>
+                    <td><code>@field.Signature</code></td>
+                    <td>@field.Description</td>
+                </tr>
+            }
+        </tbody>
+    </MudSimpleTable>
+    <MudText Typo="Typo.body1">
+        Cualquier otro cuerpo viaja entero en el mensaje. Así se leen desde el llamador:
+    </MudText>
+    <CodeBlock Code="@CatchCode" />
+    <MudText Typo="Typo.body1">
+        <code>DomainError</code> viene de <code>Persiltech.Shared</code>.
+    </MudText>
+
+    <SectionHeading Text="Reenviar la cultura" />
+    <MudText Typo="Typo.body1">
+        <code>LocalizationDelegatingHandler</code> lee la clave <code>culture</code> de
+        <code>localStorage</code> y la envía como <code>Accept-Language</code>, de modo que el
+        servidor resuelve la misma cultura que ve el usuario. Es la contraparte de cliente del
+        middleware de localización de ASP.NET Core.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <strong>No tiene método de registro propio</strong>, así que se registra a mano:
+    </MudText>
+    <CodeBlock Code="@LocalizationCode" />
+    <MudText Typo="Typo.body1">
+        Necesita un <code>IJSRuntime</code>, así que solo sirve donde haya navegador: Blazor
+        WebAssembly, o Blazor Server con el circuito ya establecido.
+    </MudText>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El manejador de excepciones <strong>convierte, no se traga</strong>: toda respuesta
+            de error acaba en excepción, así que el llamador nunca comprueba un código de estado.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El <code>problem+json</code> se reparte <strong>solo si su <code>instance</code> lo
+            marca como propio</strong>. Cualquier otro cuerpo se pasa como texto en lugar de
+            adivinarlo.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <code>AddExceptionDelegatingHandler</code> usa <code>TryAddTransient</code>: llamarlo
+            dos veces no duplica el registro, y <code>Transient</code> es el tiempo de vida que
+            exige un <code>DelegatingHandler</code>.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Registrar un manejador <strong>no</strong> lo enlaza a ningún cliente. Qué cliente
+            lleva qué manejador lo decide el consumidor con <code>AddHttpMessageHandler</code>.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Fuera de alcance" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Configurar el <code>HttpClient</code>: dirección base, cabeceras, política de
+            reintentos.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Block">
+            Producir la respuesta <code>problem+json</code>. Eso es del servidor.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>, para aplicaciones Blazor.
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.HttpDelegatingHandlers";
+
+    private const string ContractCode = """
+        namespace Persiltech.HttpDelegatingHandlers;
+
+        public class ExceptionDelegatingHandler(ILogger<ExceptionDelegatingHandler> logger)
+            : DelegatingHandler;
+
+        public sealed class LocalizationDelegatingHandler(IJSRuntime jsRuntime)
+            : DelegatingHandler;
+
+        public static class DependencyInjection
+        {
+            extension(IServiceCollection services)
+            {
+                public IServiceCollection AddExceptionDelegatingHandler();
+            }
+        }
+        """;
+
+    private const string RegistrationCode = """
+        using Persiltech.HttpDelegatingHandlers;
+
+        builder.Services.AddExceptionDelegatingHandler();
+
+        builder.Services.AddHttpClient<MembershipGateway>(httpClient =>
+            {
+                httpClient.BaseAddress = new Uri("https://localhost:44365");
+            })
+            .AddHttpMessageHandler<ExceptionDelegatingHandler>();
+        """;
+
+    private const string CatchCode = """
+        try
+        {
+            var tokens = await gateway.Autenticate(credentials);
+        }
+        catch (HttpRequestException exception)
+        {
+            var title = exception.Data["Title"] as string;
+            var errors = exception.Data["Errors"] as IEnumerable<DomainError>;
+        }
+        catch (UnauthorizedAccessException)
+        {
+            // 401 o 403: las credenciales no valen, o no bastan.
+        }
+        """;
+
+    private const string LocalizationCode = """
+        builder.Services.AddTransient<LocalizationDelegatingHandler>();
+
+        builder.Services.AddHttpClient<MembershipGateway>(/* … */)
+            .AddHttpMessageHandler<ExceptionDelegatingHandler>()
+            .AddHttpMessageHandler<LocalizationDelegatingHandler>();
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "class ExceptionDelegatingHandler(ILogger<ExceptionDelegatingHandler> logger)",
+            "Convierte una respuesta de error en excepción, repartiendo el problem+json en sus datos."),
+        new ContractMember(
+            "sealed class LocalizationDelegatingHandler(IJSRuntime jsRuntime)",
+            "Envía en cada petición la cultura guardada en localStorage, como cabecera Accept-Language."),
+        new ContractMember(
+            "IServiceCollection AddExceptionDelegatingHandler()",
+            "Registra ExceptionDelegatingHandler como Transient. Idempotente: llamarlo dos veces no lo duplica.")
+    ];
+
+    // Reutiliza ContractMember por su forma —dos cadenas—, no por su significado: aquí no son
+    // miembros, así que se pinta con su propia tabla y no con ContractMemberTable.
+    private static readonly IReadOnlyList<ContractMember> ProblemDetailsMapping =
+    [
+        new ContractMember("detail", "El mensaje de la excepción."),
+        new ContractMember("instance", "La propiedad Source de la excepción."),
+        new ContractMember("title", "exception.Data[\"Title\"], como string."),
+        new ContractMember("errors", "exception.Data[\"Errors\"], como IEnumerable<DomainError>.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

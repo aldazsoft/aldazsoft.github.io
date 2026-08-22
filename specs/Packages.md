@@ -29,6 +29,10 @@ packages:
     route: Blazor.JSInterop
     path: Blazor.JSInterop
 
+  - id: Persiltech.HttpDelegatingHandlers
+    route: HttpDelegatingHandlers
+    path: HttpDelegatingHandlers
+
   - id: Persiltech.Localizer
     route: Localizer
     path: Localizer

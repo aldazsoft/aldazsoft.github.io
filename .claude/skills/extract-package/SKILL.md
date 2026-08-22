@@ -126,9 +126,24 @@ Antes de mover, comprueba en el monorepo:
 1. **Las versiones que el CPM fija** para sus `PackageReference`. En el monorepo,
    `Directory.Packages.props` hace también de `Directory.Build.props`: el TFM y el `LangVersion`
    viven ahí. Un proyecto sacado sin eso **no compila**.
-2. **Si los `Tests/{{paquete}}.Tests` son pruebas de verdad o una app de verificación.** Míralo
+2. **Si lo que acompaña al proyecto son pruebas de verdad o una app de verificación.** Míralo
    por el `Sdk=` del `.csproj`: `Microsoft.NET.Sdk.BlazorWebAssembly` o `.Web` es verificación y
    va a `samples/`; xUnit es prueba y va a `tests/`.
+
+   > **Renómbralo al mover.** El monorepo los llama `.Tests` o `.Test` sin distinguir qué son;
+   > el estándar usa dos nombres, y el nombre tiene que decir la verdad:
+   >
+   > | Qué es | Dónde va | Cómo se llama |
+   > |---|---|---|
+   > | App de verificación | `samples/` | `{{paquete}}.Sample` |
+   > | Pruebas xUnit | `tests/` | `{{paquete}}.Tests` |
+   >
+   > Renombrar arrastra el directorio, el `.csproj`, el `.slnx` y **los namespaces de sus
+   > archivos**: hazlo con `git mv` y un reemplazo sobre `.cs`, `.razor` y `.slnx`, y compila
+   > antes de dar el paso por bueno. Es barato ahora y caro después de publicar.
+   >
+   > Importa porque `dotnet test` en CI solo significa algo si lo que hay en `tests/` son
+   > pruebas: un verificador llamado `.Tests` hace que el paso pase en verde sin ejecutar nada.
 3. **Quién lo consume por `ProjectReference`**, que serían los únicos que romperían al moverlo.
 
 Después: copia el proyecto y sus acompañantes, **excluyendo `bin/`, `obj/` y `.csproj.user`**,

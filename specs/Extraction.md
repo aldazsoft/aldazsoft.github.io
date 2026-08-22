@@ -9,8 +9,8 @@ updated: 2026-08-21
 
 # Paquete en vuelo y paso en el que se quedó. Vacío = no hay ninguno empezado.
 current:
-  package:
-  step:
+  package: Persiltech.HttpDelegatingHandlers
+  step: 7 — alta en el sitio hecha. Siguiente: 8, desplegar el sitio (antes de publicar)
 ---
 
 # Traslado de paquetes
@@ -89,8 +89,12 @@ Viven detalladas en `PackageInventory.md`; aquí el resumen operativo:
 - **Código privado**: todos los paquetes de la casa. El `.csproj` retira la metadata de
   repositorio y apaga SourceLink; ninguna página enlaza a GitHub.
 - **Idioma**: el README va en el idioma de su `<Description>`; la página del sitio, en español.
-- **Los `.Tests` del monorepo casi nunca son pruebas**: suelen ser apps de verificación y van a
-  `samples/`. Compruébalo por el SDK del `.csproj` antes de moverlos.
+- **Los `.Tests` del monorepo casi nunca son pruebas**: suelen ser apps de verificación.
+  Compruébalo por el SDK del `.csproj` antes de moverlos, y **renómbralos al mover** según el
+  estándar: `{{paquete}}.Sample` en `samples/` si es un verificador,
+  `{{paquete}}.Tests` en `tests/` si son pruebas xUnit. El monorepo mezcla ambos nombres —y a
+  veces el singular `.Test`—, pero en el repositorio extraído el nombre tiene que decir la
+  verdad: si no, `dotnet test` en CI pasa en verde sin ejecutar nada.
 
 ## Trampas que ya nos costaron una corrección
 
@@ -101,3 +105,7 @@ Viven detalladas en `PackageInventory.md`; aquí el resumen operativo:
 - **Los `PackageReference` sin versión** dependen del CPM del monorepo; hay que recuperar las
   versiones de allí antes de mover.
 - **`bin/`, `obj/` y `.csproj.user`** viajan en la copia si no se excluyen.
+- **Al retirar del monorepo, el directorio sobrevive al `git commit`**: `obj/` está en el
+  `.gitignore`, así que `git status` sale limpio y el proyecto parece borrado cuando no lo está.
+  Comprueba con `find Src -maxdepth 1 -type d` que el recuento bajó, o busca directorios sin su
+  `.csproj` dentro.
