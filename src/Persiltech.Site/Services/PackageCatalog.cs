@@ -104,6 +104,28 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("1.0.0", "Primera publicación de Result, Result<TSuccess> y Result<TSuccess, TError>.")
         ]);
 
+    private static readonly NuGetPackage Email = new(
+        Id: "Persiltech.Email",
+        Route: "/Email",
+        Summary: "Envío de correo por SMTP: el contrato IEmailSender y su implementación con MailKit, con las opciones del servidor validadas al arrancar la aplicación.",
+        TargetFramework: "net10.0",
+        IsPrerelease: true,
+        Releases:
+        [
+            new PackageRelease("0.1.0", "Primera publicación de IEmailSender, EmailMessage y el envío SMTP con MailKit. Las opciones se validan al arrancar con IValidateOptions y devuelven todos los fallos juntos. Remitente y destinatario se analizan con el mismo criterio, que rechaza las direcciones sin dominio antes de abrir la conexión.")
+        ]);
+
+    private static readonly NuGetPackage MembershipEmail = new(
+        Id: "Persiltech.Membership.Email",
+        Route: "/Membership.Email",
+        Summary: "El adaptador de correo de Persiltech.Membership: compone los avisos de la cuenta con plantillas HTML que se rebrandean por configuración, y los entrega por Persiltech.Email.",
+        TargetFramework: "net10.0",
+        IsPrerelease: true,
+        Releases:
+        [
+            new PackageRelease("0.1.0", "Primera publicación del adaptador de IMembershipEmailSender: confirmación del correo, reinicio de contraseña y cambio de correo, con plantillas HTML embebidas que se sustituyen por archivo. La marca, los colores y las rutas de la aplicación cliente son configuración, y las opciones se validan al arrancar.")
+        ]);
+
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
     private static readonly IReadOnlyList<NuGetPackage> Packages =
@@ -114,7 +136,9 @@ public sealed class PackageCatalog : IPackageCatalog
             HttpDelegatingHandlers,
             Localizer,
             Results,
-            DomainValidation
+            DomainValidation,
+            Email,
+            MembershipEmail
         ];
 
     /// <inheritdoc />

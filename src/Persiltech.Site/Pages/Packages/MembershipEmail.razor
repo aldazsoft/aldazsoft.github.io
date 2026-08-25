@@ -1,0 +1,241 @@
+@page "/Membership.Email"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Membership.Email</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        <code>Persiltech.Membership</code> deja <code>IMembershipEmailSender</code> sin implementar
+        a propósito, porque redactar el mensaje exige conocer la marca, el diseño y las rutas de la
+        aplicación. Este paquete pone esas tres cosas en <code>Options</code> y en plantillas
+        sustituibles, de modo que dos aplicaciones distintas comparten el mismo binario.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">Dos registros en el arranque de la aplicación:</MudText>
+    <CodeBlock Code="@RegistrationCode" />
+    <MudText Typo="Typo.body1">
+        <code>AddMembershipEmail</code> <strong>no registra el transporte</strong>:
+        <code>IEmailSender</code> lo aporta el consumidor, normalmente con
+        <code>AddSmtpEmailSender</code> de
+        <MudLink Href="/Email">Persiltech.Email</MudLink>, porque elegir servidor y credenciales es
+        suyo. El orden entre ambas llamadas da igual; lo que no puede es faltar una.
+    </MudText>
+    <MudText Typo="Typo.body1">Con la configuración correspondiente:</MudText>
+    <CodeBlock Code="@SettingsCode" Caption="appsettings.json" />
+
+    <SectionHeading Text="Las opciones" />
+    <CodeBlock Code="@OptionsCode" Caption="MembershipEmailOptions.cs" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        Se validan <strong>al arrancar la aplicación</strong> y los fallos salen todos juntos. Dos
+        de las reglas evitan fallos silenciosos que de otro modo nadie ve:
+        <code>TemplatesDirectory</code> tiene que existir —apuntando a un directorio que no está, se
+        servirían las plantillas embebidas y el rebrandeo no se aplicaría sin avisar— y
+        <code>LogoUrl</code> tiene que ser absoluta, porque los clientes de correo no resuelven
+        rutas relativas.
+    </MudText>
+
+    <SectionHeading Text="Los enlaces" />
+    <MudText Typo="Typo.body1">
+        Cada aviso lleva un enlace de vuelta con los datos que la pantalla tiene que devolver a la
+        API. Los nombres de los parámetros salen de los contratos de
+        <code>Persiltech.Membership</code>, que identifican la cuenta por el correo:
+    </MudText>
+    <MudSimpleTable Dense="true" Hover="true" Striped="true" Elevation="0">
+        <thead>
+            <tr>
+                <th>Aviso</th>
+                <th>Enlace</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Confirmación de correo</td>
+                <td><code>{ClientBaseUrl}{EmailConfirmationPath}?email=…&amp;token=…</code></td>
+            </tr>
+            <tr>
+                <td>Reinicio de contraseña</td>
+                <td><code>{ClientBaseUrl}{PasswordResetPath}?email=…&amp;token=…</code></td>
+            </tr>
+            <tr>
+                <td>Cambio de correo</td>
+                <td><code>{ClientBaseUrl}{EmailChangePath}?newEmail=…&amp;token=…</code></td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+    <MudText Typo="Typo.body1">
+        Ambos valores viajan codificados con <code>Uri.EscapeDataString</code>: los testigos de
+        ASP.NET Core Identity traen <code>+</code> y <code>/</code>, y sin codificar se pierden por
+        el camino.
+    </MudText>
+
+    <SectionHeading Text="Las plantillas" />
+    <MudText Typo="Typo.body1">
+        Cada aviso son tres archivos embebidos en el ensamblado: el asunto, el cuerpo HTML y el
+        cuerpo en texto plano. El HTML de cada aviso es solo el interior; el encabezado, el ancho de
+        600 píxeles y el pie viven una vez en <code>Layout.html</code>, que envuelve a los tres.
+    </MudText>
+    <CodeBlock Code="@TemplatesCode" />
+    <MudText Typo="Typo.body1">
+        <code>TemplatesDirectory</code> apunta a una carpeta cuyos archivos ganan a los embebidos,
+        por nombre. Basta con dejar ahí el que se quiera cambiar —<code>Layout.html</code> para
+        rebrandear entero, o el HTML de un aviso suelto—; el resto siguen saliendo del paquete.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        La sintaxis de los marcadores es <code>{{Nombre}}</code>. Uno que no corresponda a ningún
+        valor lanza <code>InvalidOperationException</code> nombrándolo: una plantilla con un nombre
+        mal tecleado tiene que fallar en el primer envío de prueba, no llegar en blanco al buzón de
+        un cliente. En el HTML los valores se insertan codificados —solo lo sensible: los acentos
+        viajan tal cual—; en el texto plano y en el asunto, crudos.
+    </MudText>
+
+    <SectionHeading Text="Otro motor de plantillas" />
+    <MudText Typo="Typo.body1">
+        <code>IEmailTemplateRenderer</code> es público y se registra con
+        <code>TryAddSingleton</code>, así que una implementación propia —con Scriban, Fluid o lo que
+        sea— registrada antes de <code>AddMembershipEmail</code> gana:
+    </MudText>
+    <CodeBlock Code="@RendererCode" />
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Plantillas en archivos, no en cadenas de C#: el HTML de correo es tabular y con estilos
+            en línea, y así se previsualiza en un navegador y lo puede tocar un diseñador.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Ni Razor ni un motor de terceros de partida: Razor exige ASP.NET Core y compilación en
+            tiempo de ejecución para tres correos transaccionales.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            La marca y las rutas son configuración: es lo que separa a este paquete de un adaptador
+            escrito dentro de una aplicación.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El paquete no elige el transporte: depende de <code>IEmailSender</code>, no de SMTP.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>. Requiere <code>Persiltech.Membership</code> y
+        <MudLink Href="/Email">Persiltech.Email</MudLink>.
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Membership.Email";
+
+    private const string RegistrationCode = """
+        builder.Services.AddSmtpEmailSender(options => builder.Configuration.GetSection("Smtp").Bind(options));
+        builder.Services.AddMembershipEmail(options => builder.Configuration.GetSection("MembershipEmail").Bind(options));
+        """;
+
+    private const string SettingsCode = """
+        {
+          "MembershipEmail": {
+            "BrandName": "Persiltech",
+            "ClientBaseUrl": "https://app.example.com",
+            "LogoUrl": "https://cdn.example.com/logo.png",
+            "PrimaryColor": "#0d6efd",
+            "SupportEmail": "soporte@example.com"
+          }
+        }
+        """;
+
+    private const string OptionsCode = """
+        public sealed class MembershipEmailOptions
+        {
+            public string BrandName { get; set; } = string.Empty;      // obligatorio
+            public string ClientBaseUrl { get; set; } = string.Empty;  // obligatoria, http o https absoluta
+
+            public string EmailConfirmationPath { get; set; } = "/confirm-email";
+            public string PasswordResetPath { get; set; } = "/reset-password";
+            public string EmailChangePath { get; set; } = "/confirm-email-change";
+
+            public string? LogoUrl { get; set; }                       // si se indica, absoluta
+            public string PrimaryColor { get; set; } = "#0d6efd";      // #rgb o #rrggbb
+            public string? SupportEmail { get; set; }
+
+            public string? TemplatesDirectory { get; set; }            // si se indica, tiene que existir
+        }
+        """;
+
+    private const string TemplatesCode = """
+        Templates/
+        ├── Layout.html                      ← encabezado + cuerpo + pie
+        ├── EmailConfirmation.subject.txt
+        ├── EmailConfirmation.html
+        ├── EmailConfirmation.txt
+        ├── PasswordReset.{subject.txt,html,txt}
+        └── EmailChange.{subject.txt,html,txt}
+        """;
+
+    private const string RendererCode = """
+        public interface IEmailTemplateRenderer
+        {
+            RenderedEmail Render(string templateName, IReadOnlyDictionary<string, string?> values);
+        }
+
+        public sealed record RenderedEmail(string Subject, string HtmlBody, string TextBody);
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember("string BrandName { get; set; }", "Nombre de la marca, en el encabezado, el pie y los asuntos. Obligatorio."),
+        new ContractMember("string ClientBaseUrl { get; set; }", "Raíz de la aplicación cliente, no de la API. Obligatoria, y URL absoluta http o https."),
+        new ContractMember("string EmailConfirmationPath { get; set; }", "Ruta de la pantalla que confirma el correo. Por defecto /confirm-email."),
+        new ContractMember("string PasswordResetPath { get; set; }", "Ruta de la pantalla que reinicia la contraseña. Por defecto /reset-password."),
+        new ContractMember("string EmailChangePath { get; set; }", "Ruta de la pantalla que confirma el cambio de correo. Por defecto /confirm-email-change."),
+        new ContractMember("string? LogoUrl { get; set; }", "Logotipo del encabezado. Opcional; si se indica, absoluta. Sin él se rotula la marca como texto."),
+        new ContractMember("string PrimaryColor { get; set; }", "Color del encabezado y del botón, en hexadecimal. Por defecto #0d6efd."),
+        new ContractMember("string? SupportEmail { get; set; }", "Correo de contacto del pie. Opcional."),
+        new ContractMember("string? TemplatesDirectory { get; set; }", "Directorio cuyas plantillas ganan a las embebidas, por nombre de archivo. Si se indica, tiene que existir.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

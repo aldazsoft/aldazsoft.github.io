@@ -1,0 +1,233 @@
+@page "/Email"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Email</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        El paquete <strong>transporta, no redacta</strong>. Recibe un asunto y un cuerpo ya
+        compuestos y los entrega al servidor. Quién elige plantilla, formato, idioma y enlaces es
+        la aplicación consumidora, que es la única que conoce sus propias rutas.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" Caption="IEmailSender.cs · EmailMessage.cs" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        <code>SendAsync</code> completa cuando el servidor SMTP <strong>acepta</strong> el mensaje.
+        Eso no es la entrega al buzón del destinatario: lo que ocurra después del salto está fuera
+        del alcance de SMTP.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <code>To</code> admite la dirección sola (<code>juan@@example.com</code>) o acompañada del
+        nombre visible (<code>Juan Pérez &lt;juan@@example.com&gt;</code>). <code>TextBody</code> es
+        el cuerpo alternativo en texto plano: si es <code>null</code>, el mensaje viaja solo con la
+        parte HTML.
+    </MudText>
+
+    <SectionHeading Text="Configuración" />
+    <CodeBlock Code="@OptionsCode" Caption="SmtpOptions.cs" />
+    <MudText Typo="Typo.body1">
+        Las opciones se validan <strong>al arrancar la aplicación</strong>, no en el primer envío, y
+        los fallos salen todos juntos: <code>Host</code> y <code>FromAddress</code> obligatorios,
+        <code>Port</code> entre 1 y 65535, <code>TimeoutInSeconds</code> entre 1 y 600, y
+        <code>Password</code> obligatoria cuando se configura <code>UserName</code>.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <code>SmtpSecurity</code> decide el cifrado de la conexión: <code>Auto</code> lo deduce del
+        puerto y de lo que anuncie el servidor, <code>StartTls</code> es lo habitual en el 587,
+        <code>SslOnConnect</code> en el 465, y <code>None</code> solo tiene sentido contra un relay
+        local de desarrollo.
+    </MudText>
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">Se registra en el arranque de la aplicación:</MudText>
+    <CodeBlock Code="@RegistrationCode" />
+    <MudText Typo="Typo.body1">Con la configuración correspondiente:</MudText>
+    <CodeBlock Code="@SettingsCode" Caption="appsettings.json" />
+    <MudText Typo="Typo.body1">Y se consume por el contrato, nunca por la implementación:</MudText>
+    <CodeBlock Code="@UsageCode" />
+
+    <SectionHeading Text="Errores" />
+    <MudText Typo="Typo.body1">
+        Un destinatario que no se puede analizar sale como <code>ArgumentException</code>
+        <strong>antes de conectar con nadie</strong>: se comprueba con el mismo criterio con el que
+        se valida <code>FromAddress</code> al arrancar, así que una dirección sin dominio no llega a
+        salir por el cable para que la rechace el servidor en el <code>RCPT TO</code>.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Lo demás <strong>no se envuelve</strong>: un servidor inalcanzable o unas credenciales
+        rechazadas salen tal cual, como excepciones de MailKit o de sockets. Tampoco hay reintentos:
+        el envío es un intento, síncrono respecto de quien llama.
+    </MudText>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El paquete transporta, no redacta: recibe el asunto y el cuerpo ya compuestos.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <code>SmtpSecurity</code> es un tipo propio y no el de MailKit, así que el arranque del
+            consumidor no necesita conocer la biblioteca de transporte.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            La implementación no se expone: el consumidor resuelve <code>IEmailSender</code>.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Una conexión por envío. El cliente SMTP de MailKit no es seguro para uso concurrente, y
+            un pool compartido es una optimización que este paquete no ha demostrado necesitar.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Sin dependencia de ASP.NET Core: sirve igual a una API web, a un worker o a una
+            aplicación de consola.
+        </MudListItem>
+    </MudList>
+    <MudText Typo="Typo.body1">
+        Quedan fuera, de momento: varios destinatarios, copia y copia oculta, adjuntos, plantillas,
+        reintentos y colas, y cualquier transporte que no sea SMTP.
+    </MudText>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1"><code>@package.TargetFramework</code></MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Email";
+
+    private const string ContractCode = """
+        namespace Persiltech.Email;
+
+        public interface IEmailSender
+        {
+            Task SendAsync(EmailMessage message, CancellationToken cancellationToken);
+        }
+
+        public sealed record EmailMessage
+        {
+            public required string To { get; init; }
+            public required string Subject { get; init; }
+            public required string HtmlBody { get; init; }
+            public string? TextBody { get; init; }
+        }
+        """;
+
+    private const string OptionsCode = """
+        public sealed class SmtpOptions
+        {
+            public string Host { get; set; } = string.Empty;          // obligatorio
+            public int Port { get; set; } = 587;                      // 1 – 65535
+            public SmtpSecurity Security { get; set; } = SmtpSecurity.Auto;
+            public string? UserName { get; set; }
+            public string? Password { get; set; }                     // obligatoria si hay UserName
+            public string FromAddress { get; set; } = string.Empty;   // obligatoria
+            public string? FromDisplayName { get; set; }
+            public int TimeoutInSeconds { get; set; } = 30;           // 1 – 600
+        }
+
+        public enum SmtpSecurity
+        {
+            Auto = 0,
+            None = 1,
+            StartTls = 2,
+            SslOnConnect = 3
+        }
+        """;
+
+    private const string RegistrationCode = """
+        builder.Services.AddSmtpEmailSender(options => builder.Configuration.GetSection("Smtp").Bind(options));
+        """;
+
+    private const string SettingsCode = """
+        {
+          "Smtp": {
+            "Host": "smtp.example.com",
+            "Port": 587,
+            "Security": "StartTls",
+            "UserName": "no-reply@example.com",
+            "Password": "...",
+            "FromAddress": "no-reply@example.com",
+            "FromDisplayName": "Persiltech"
+          }
+        }
+        """;
+
+    private const string UsageCode = """
+        public sealed class WelcomeNotifier(IEmailSender emailSender)
+        {
+            public Task NotifyAsync(string email, CancellationToken cancellationToken) =>
+                emailSender.SendAsync(
+                    new EmailMessage
+                    {
+                        To = email,
+                        Subject = "Bienvenido",
+                        HtmlBody = "<p>Tu cuenta ya está activa.</p>",
+                        TextBody = "Tu cuenta ya está activa."
+                    },
+                    cancellationToken);
+        }
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember(
+            "Task SendAsync(EmailMessage message, CancellationToken cancellationToken)",
+            "Entrega el mensaje al servidor de correo. La tarea completa cuando el servidor lo acepta."),
+        new ContractMember(
+            "string To { get; init; }",
+            "Destinatario, con o sin nombre visible. Se analiza al enviar, no al construir el mensaje."),
+        new ContractMember(
+            "string Subject { get; init; }",
+            "Asunto del mensaje. Obligatorio."),
+        new ContractMember(
+            "string HtmlBody { get; init; }",
+            "Cuerpo del mensaje en HTML. Obligatorio."),
+        new ContractMember(
+            "string? TextBody { get; init; }",
+            "Cuerpo alternativo en texto plano. Si es null, el mensaje viaja solo con la parte HTML.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

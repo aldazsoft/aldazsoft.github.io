@@ -44,6 +44,14 @@ packages:
   - id: Persiltech.DomainValidation
     route: DomainValidation
     path: Persiltech.DomainValidation
+
+  - id: Persiltech.Email
+    route: Email
+    path: Email
+
+  - id: Persiltech.Membership.Email
+    route: Membership.Email
+    path: Membership.Email
 ---
 
 # Propósito
