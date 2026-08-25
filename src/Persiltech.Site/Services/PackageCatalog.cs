@@ -113,8 +113,7 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.1.0", "Primera publicación de IEmailSender, EmailMessage y el envío SMTP con MailKit. Las opciones se validan al arrancar con IValidateOptions y devuelven todos los fallos juntos. Remitente y destinatario se analizan con el mismo criterio, que rechaza las direcciones sin dominio antes de abrir la conexión.")
-        ],
-        IsPublished: false);
+        ]);
 
     private static readonly NuGetPackage MembershipEmail = new(
         Id: "Persiltech.Membership.Email",
