@@ -20,6 +20,13 @@ else
 
     <SectionHeading Text="Instalación" />
     <CodeBlock Code="@package.InstallCommand" />
+    @if (!package.IsPublished)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            El paquete todavía no está en nuget.org, así que el comando aún no resuelve: esta
+            página se despliega antes que el paquete que la declara como su sitio oficial.
+        </MudAlert>
+    }
 
     <SectionHeading Text="Uso" />
     <MudText Typo="Typo.body1">Dos registros en el arranque de la aplicación:</MudText>

@@ -9,13 +9,20 @@ namespace Persiltech.Site.Models;
 /// <param name="TargetFramework">Moniker del framework de destino (Ej. <c>net10.0</c>).</param>
 /// <param name="IsPrerelease">Indica si la superficie pública todavía puede cambiar entre versiones menores.</param>
 /// <param name="Releases">Historial de versiones publicadas, de la más reciente a la más antigua.</param>
+/// <param name="IsPublished">
+/// Indica si el paquete ya está en nuget.org. La página se despliega <em>antes</em> que el
+/// paquete —su <c>PackageProjectUrl</c> la declara como sitio oficial, y un enlace muerto solo
+/// se corrige publicando otra versión—, así que hay una ventana en la que la página existe y
+/// el paquete no. Mientras dura, la insignia de versión no tiene nada que mostrar.
+/// </param>
 public sealed record NuGetPackage(
     string Id,
     string Route,
     string Summary,
     string TargetFramework,
     bool IsPrerelease,
-    IReadOnlyList<PackageRelease> Releases)
+    IReadOnlyList<PackageRelease> Releases,
+    bool IsPublished = true)
 {
     /// <summary>
     /// Dirección de la página del paquete en nuget.org.

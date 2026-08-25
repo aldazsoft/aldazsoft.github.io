@@ -113,7 +113,8 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.1.0", "Primera publicación de IEmailSender, EmailMessage y el envío SMTP con MailKit. Las opciones se validan al arrancar con IValidateOptions y devuelven todos los fallos juntos. Remitente y destinatario se analizan con el mismo criterio, que rechaza las direcciones sin dominio antes de abrir la conexión.")
-        ]);
+        ],
+        IsPublished: false);
 
     private static readonly NuGetPackage MembershipEmail = new(
         Id: "Persiltech.Membership.Email",
@@ -124,7 +125,8 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.1.0", "Primera publicación del adaptador de IMembershipEmailSender: confirmación del correo, reinicio de contraseña y cambio de correo, con plantillas HTML embebidas que se sustituyen por archivo. La marca, los colores y las rutas de la aplicación cliente son configuración, y las opciones se validan al arrancar.")
-        ]);
+        ],
+        IsPublished: false);
 
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.

@@ -147,6 +147,14 @@ versiones antiguas sin nada que contar se agrupan en un rango, como ya hace el c
 Ojo con `IsPrerelease`: es `true` mientras la versión sea `0.x`. Al llegar a `1.0.0` hay que
 ponerlo en `false`, y entonces la página deja de mostrar el aviso de superficie inestable.
 
+Y con `IsPublished`, que vale `true` salvo que se diga lo contrario: se pone en `false`
+mientras el paquete no esté en nuget.org. Es lo normal en una página nueva, porque el sitio
+se despliega antes que el paquete. Con él en `false`, la cabecera cambia la insignia de
+versión —que sin paquete solo sabe decir *package not found*— por un aviso de *Próximamente
+en NuGet*, y la sección de instalación advierte de que el comando aún no resuelve. Se quita
+en cuanto la versión llegue a nuget.org, y esa es la señal de que hay que volver a pasar por
+aquí después de publicar.
+
 ### Paso 5 — Verificación
 
 ```powershell

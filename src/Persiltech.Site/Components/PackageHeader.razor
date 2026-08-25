@@ -5,9 +5,19 @@
 </MudText>
 
 <div class="d-flex flex-wrap align-center gap-2">
-    <MudLink Href="@Package.NuGetUrl" Target="_blank" rel="noopener">
-        <img src="@Package.VersionBadgeUrl" alt="Versión publicada en NuGet" height="20" />
-    </MudLink>
+    @if (Package.IsPublished)
+    {
+        <MudLink Href="@Package.NuGetUrl" Target="_blank" rel="noopener">
+            <img src="@Package.VersionBadgeUrl" alt="Versión publicada en NuGet" height="20" />
+        </MudLink>
+    }
+    else
+    {
+        @* Sin paquete en nuget.org, la insignia de versión solo sabe decir "package not found". *@
+        <MudChip T="string" Size="Size.Small" Variant="Variant.Outlined" Color="Color.Info" Class="ma-0">
+            Próximamente en NuGet
+        </MudChip>
+    }
     <MudLink Href="@SiteLinks.LicenseUrl">
         <img src="https://img.shields.io/badge/License-MIT-blue.svg" alt="Licencia MIT" height="20" />
     </MudLink>
