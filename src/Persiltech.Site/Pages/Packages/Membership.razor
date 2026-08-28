@@ -1,0 +1,240 @@
+@page "/Membership"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Membership</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Registro y autenticación de usuarios sobre ASP.NET Core Identity, con endpoints de Minimal
+        API que montas en la ruta que elijas y emisión de un JSON Web Token firmado con HMAC-SHA256.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+    @if (!package.IsPublished)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            El paquete todavía no está en nuget.org, así que el comando aún no resuelve: esta
+            página se despliega antes que el paquete que la declara como su sitio oficial.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">
+        <code>ApplicationUser</code> y <code>MembershipDbContext</code> se exponen porque los
+        necesitas para generar tus migraciones y para resolver
+        <code>UserManager&lt;ApplicationUser&gt;</code> desde tu propio código. En este paquete el
+        correo <em>es</em> el nombre de usuario: <code>UserName</code> y <code>Email</code> reciben
+        ambos la dirección con la que se registró la cuenta.
+    </MudText>
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">
+        Un registro que recibe la configuración del token y el proveedor de Entity Framework Core:
+    </MudText>
+    <CodeBlock Code="@RegistrationCode" />
+    <MudText Typo="Typo.body1">Y las rutas, por defecto o las tuyas, decorables una a una:</MudText>
+    <CodeBlock Code="@EndpointsCode" />
+
+    <SectionHeading Text="Los grupos de endpoints" />
+    <MudSimpleTable Dense="true" Hover="true" Striped="true" Elevation="0">
+        <thead>
+            <tr>
+                <th>Grupo</th>
+                <th>Qué monta</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr><td><code>MapMembershipEndpoints</code></td><td>Registro y autenticación</td></tr>
+            <tr><td><code>MapRoleEndpoints</code> · <code>MapUserEndpoints</code></td><td>Administración de roles y de usuarios</td></tr>
+            <tr><td><code>MapPasswordEndpoints</code></td><td>Cambio, olvido y reinicio de contraseña</td></tr>
+            <tr><td><code>MapEmailEndpoints</code></td><td>Confirmación y cambio de correo</td></tr>
+            <tr><td><code>MapPhoneNumberEndpoints</code></td><td>Cambio de teléfono con código</td></tr>
+            <tr><td><code>MapProfileEndpoints</code> · <code>MapTwoFactorEndpoints</code></td><td>Perfil y doble factor de la cuenta autenticada</td></tr>
+        </tbody>
+    </MudSimpleTable>
+    <MudText Typo="Typo.body1">
+        Los de administración no fijan política de autorización: devuelven el
+        <code>RouteHandlerBuilder</code> para que la encadenes tú, porque el paquete no sabe qué
+        políticas tiene tu aplicación.
+    </MudText>
+
+    <SectionHeading Text="Los puertos de salida los implementas tú" />
+    <MudText Typo="Typo.body1">
+        El paquete <strong>no envía correos ni SMS, y no redacta ningún mensaje</strong>. Entrega
+        los datos y el testigo por dos puertos que registras en tu contenedor:
+    </MudText>
+    <CodeBlock Code="@PortsCode" />
+    <MudText Typo="Typo.body1">
+        Redactar aquí obligaría al paquete a elegir plantilla, formato e idioma, y a inventarse el
+        patrón de ruta de una pantalla que es de tu aplicación. No registra ninguna implementación
+        de reserva a propósito: una que no enviara nada convertiría un olvido de configuración en un
+        fallo silencioso.
+    </MudText>
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+        Si no quieres redactar los correos a mano,
+        <MudLink Href="/Membership.Email">Persiltech.Membership.Email</MudLink> implementa el puerto
+        de correo con plantillas HTML que se rebrandean por configuración.
+    </MudAlert>
+
+    <SectionHeading Text="Migraciones" />
+    <MudText Typo="Typo.body1">
+        El paquete <strong>no incluye migraciones y no puede incluirlas</strong>: son específicas del
+        proveedor de Entity Framework Core, y el proveedor lo eliges tú. Como
+        <code>MembershipDbContext</code> vive en el ensamblado del paquete, hay que decirle a Entity
+        Framework Core que las genere en el tuyo, con <code>MigrationsAssembly</code>.
+    </MudText>
+    <CodeBlock Code="@MigrationsCode" />
+    <MudText Typo="Typo.body1">
+        El esquema resultante es el estándar de ASP.NET Core Identity, con <code>FirstName</code> y
+        <code>LastName</code> añadidas a <code>AspNetUsers</code>.
+    </MudText>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El paquete emite el token; no lo valida. Configurar el esquema y montar el middleware es
+            tuyo, que eres quien sabe qué otros esquemas tienes y en qué orden va tu pipeline.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <code>AddIdentityCore</code>, nunca <code>AddIdentity</code>: este último fija el esquema
+            de autenticación por defecto y te secuestra la configuración.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Las opciones del token se validan al arrancar, no en la primera petición.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Los endpoints no fijan políticas de autorización ni rutas: ambas las decides tú.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1"><code>@package.TargetFramework</code></MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Membership";
+
+    private const string ContractCode = """
+        public sealed class ApplicationUser : IdentityUser
+        {
+            [Required]
+            [MaxLength(100)]
+            public string FirstName { get; set; } = string.Empty;
+
+            [Required]
+            [MaxLength(100)]
+            public string LastName { get; set; } = string.Empty;
+        }
+
+        public sealed class MembershipDbContext(DbContextOptions<MembershipDbContext> options)
+            : IdentityDbContext<ApplicationUser>(options);
+
+        public sealed class JwtOptions
+        {
+            public string SecurityKey { get; set; } = string.Empty;    // mínimo 32 caracteres
+            public string ValidIssuer { get; set; } = string.Empty;
+            public string ValidAudience { get; set; } = string.Empty;
+            public int ExpireInMinutes { get; set; }
+        }
+        """;
+
+    private const string RegistrationCode = """
+        builder.Services.AddMembershipServices(
+            jwt => builder.Configuration.GetSection("Jwt").Bind(jwt),
+            options => options.UseSqlServer(
+                builder.Configuration.GetConnectionString("Membership"),
+                sql => sql.MigrationsAssembly(typeof(Program).Assembly.FullName)));
+
+        // El paquete emite el token; validarlo es tuyo.
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options => options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidIssuer = builder.Configuration["Jwt:ValidIssuer"],
+                ValidAudience = builder.Configuration["Jwt:ValidAudience"],
+                IssuerSigningKey = new SymmetricSecurityKey(
+                    Encoding.UTF8.GetBytes(builder.Configuration["Jwt:SecurityKey"]!))
+            });
+        """;
+
+    private const string EndpointsCode = """
+        app.MapMembershipEndpoints();                             // user/register y user/login
+        app.MapMembershipEndpoints("auth/signup", "auth/signin"); // las tuyas
+
+        app.MapUserRegistrationEndpoint("user/register").WithTags("Cuentas");
+        app.MapUserLoginEndpoint("user/login").RequireRateLimiting("login");
+        """;
+
+    private const string PortsCode = """
+        public interface IMembershipEmailSender
+        {
+            Task SendEmailConfirmationAsync(EmailConfirmationMessage message, CancellationToken cancellationToken);
+            Task SendPasswordResetAsync(PasswordResetMessage message, CancellationToken cancellationToken);
+            Task SendEmailChangeAsync(EmailChangeMessage message, CancellationToken cancellationToken);
+        }
+
+        public interface IMembershipSmsSender
+        {
+            Task SendPhoneChangeAsync(PhoneChangeMessage message, CancellationToken cancellationToken);
+        }
+        """;
+
+    private const string MigrationsCode = """
+        dotnet ef migrations add InitialMembership --context MembershipDbContext
+        dotnet ef database update --context MembershipDbContext
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember("ApplicationUser", "Usuario de la aplicación: el IdentityUser de Identity con FirstName y LastName. Lo necesitas para tus migraciones y para resolver UserManager<ApplicationUser>."),
+        new ContractMember("MembershipDbContext", "Contexto de datos de Identity, sobre el que generas tus migraciones."),
+        new ContractMember("JwtOptions", "Opciones de emisión del token: clave de firma, emisor, audiencia y minutos de vigencia. Se validan al arrancar."),
+        new ContractMember("AddMembershipServices(...)", "Registra el contexto, Identity y la emisión de tokens. No llama a AddAuthentication ni a AddJwtBearer."),
+        new ContractMember("IMembershipEmailSender · IMembershipSmsSender", "Puertos de salida de los avisos. Los implementas y registras tú.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

@@ -42,6 +42,8 @@ routes=(
   "Results|Persiltech.Results|El patrón Result: una operación devuelve su éxito o su fallo como valor, con mensajes de error localizados, en lugar de lanzar excepciones para el flujo previsible."
   "DomainValidation|Persiltech.DomainValidation|Validación de reglas de negocio con el patrón Specification: reglas fluidas por propiedad, evaluación asíncrona y errores reunidos en un ValidationResult."
   "Email|Persiltech.Email|Envío de correo por SMTP: el contrato IEmailSender y su implementación con MailKit, con las opciones del servidor validadas al arrancar la aplicación."
+  "Membership|Persiltech.Membership|Sistema de membresía para ASP.NET Core: registro y autenticación sobre ASP.NET Core Identity, endpoints de Minimal API que montas donde quieras y emisión de un JSON Web Token firmado con HMAC-SHA256."
+  "Membership.OAuth|Persiltech.Membership.OAuth|Servidor de autorización OAuth 2.0 y OpenID Connect sobre OpenIddict para Persiltech.Membership: Authorization Code con PKCE, credenciales de cliente y renovación por refresh token."
   "Membership.Email|Persiltech.Membership.Email|El adaptador de correo de Persiltech.Membership: compone los avisos de la cuenta con plantillas HTML que se rebrandean por configuración, y los entrega por Persiltech.Email."
   "about|Trayectoria|Experiencia, tecnologías y forma de trabajar de Edinson Aldaz."
   "contact|Contacto|Soporte de los paquetes, consultoría y colaboración."

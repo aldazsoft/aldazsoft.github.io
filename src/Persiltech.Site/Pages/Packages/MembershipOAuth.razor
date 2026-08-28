@@ -1,0 +1,199 @@
+@page "/Membership.OAuth"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Membership.OAuth</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Servidor de autorización OAuth 2.0 y OpenID Connect sobre
+        <MudLink Href="https://documentation.openiddict.com/" Target="_blank" rel="noopener">OpenIddict</MudLink>,
+        construido encima de <MudLink Href="/Membership">Persiltech.Membership</MudLink>: emite
+        testigos para las mismas cuentas de ASP.NET Core Identity que administra el paquete base.
+        Admite <strong>Authorization Code con PKCE</strong>, <strong>credenciales de cliente</strong>
+        y la renovación por <strong>refresh token</strong>.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+    @if (!package.IsPublished)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            El paquete todavía no está en nuget.org, así que el comando aún no resuelve: esta
+            página se despliega antes que el paquete que la declara como su sitio oficial.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+
+    <SectionHeading Text="Uso" />
+    <CodeBlock Code="@RegistrationCode" />
+    <MudText Typo="Typo.body1">
+        El esquema interactivo es tuyo: el flujo Authorization Code exige una sesión de navegador,
+        y el paquete no monta ninguna ni trae pantalla de inicio de sesión. Igual que el paquete
+        base emite el token pero no lo valida, aquí la autenticación del usuario ante el servidor
+        de autorización la pones tú.
+    </MudText>
+
+    <SectionHeading Text="Los clientes" />
+    <CodeBlock Code="@ClientsCode" />
+    <MudText Typo="Typo.body1">
+        El registro es <strong>idempotente</strong>: vuelve a describir el cliente si ya estaba, así
+        que puede correr en cada arranque. Un cliente <strong>sin secreto</strong> es público y solo
+        puede usar Authorization Code con PKCE —el caso de una aplicación de navegador o móvil, que
+        no puede guardar un secreto—; uno <strong>con secreto</strong> es confidencial y puede usar
+        además credenciales de cliente.
+    </MudText>
+
+    <SectionHeading Text="Migraciones" />
+    <MudText Typo="Typo.body1">
+        El paquete trae su propio <code>MembershipOAuthDbContext</code> para las tablas de OpenIddict
+        y, como con el paquete base, las migraciones son tuyas porque el proveedor de Entity
+        Framework Core lo eliges tú.
+    </MudText>
+    <CodeBlock Code="@MigrationsCode" />
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Las cuentas son las de <code>Persiltech.Membership</code>: no hay un almacén de usuarios
+            paralelo ni una identidad distinta que mantener sincronizada.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            El paquete no monta pantalla de inicio de sesión ni esquema interactivo: eso es de la
+            aplicación, que es quien decide cómo se ve y cómo autentica.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Las rutas de los endpoints son configuración, con los valores de
+            <code>/connect/*</code> por defecto.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            Los certificados de desarrollo se activan con una opción explícita, para que nadie los
+            lleve a producción sin querer.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>. Requiere
+        <MudLink Href="/Membership">Persiltech.Membership</MudLink>.
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Versión <code>0.x</code>: la superficie pública puede cambiar entre versiones menores.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente no es público, así que este es el registro de cambios del paquete.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                El código fuente de este paquete no es público. Escribe a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Membership.OAuth";
+
+    private const string ContractCode = """
+        public sealed class MembershipOAuthDbContext(DbContextOptions<MembershipOAuthDbContext> options)
+            : DbContext(options);
+
+        public sealed class MembershipOAuthOptions
+        {
+            public string AuthorizationEndpointPath { get; set; }        // "/connect/authorize"
+            public string TokenEndpointPath { get; set; }                // "/connect/token"
+            public string UserInfoEndpointPath { get; set; }             // "/connect/userinfo"
+            public string EndSessionEndpointPath { get; set; }           // "/connect/logout"
+            public string RevocationEndpointPath { get; set; }           // "/connect/revoke"
+            public string LoginPath { get; set; }                        // "/account/login"
+            public string InteractiveAuthenticationScheme { get; set; }  // "Cookies"
+            public int AccessTokenLifetimeInMinutes { get; set; }        // 30
+            public int RefreshTokenLifetimeInDays { get; set; }          // 14
+            public string[] Scopes { get; set; }
+            public bool UseDevelopmentCertificates { get; set; }
+        }
+        """;
+
+    private const string RegistrationCode = """
+        builder.Services.AddMembershipOAuthServer(
+            options => options.UseSqlServer(
+                builder.Configuration.GetConnectionString("Membership"),
+                sql => sql.MigrationsAssembly(typeof(Program).Assembly.FullName)),
+            oauth =>
+            {
+                oauth.LoginPath = "/account/login";
+                oauth.UseDevelopmentCertificates = true;   // solo en desarrollo
+            });
+
+        // El esquema interactivo es tuyo: el flujo Authorization Code exige una sesión de
+        // navegador, y el paquete no monta ninguna ni trae pantalla de inicio de sesión.
+        builder.Services
+            .AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme,
+                options => options.LoginPath = "/account/login");
+
+        var app = builder.Build();
+
+        app.UseAuthentication();
+        app.UseAuthorization();
+
+        app.MapMembershipOAuthEndpoints();
+        """;
+
+    private const string ClientsCode = """
+        await app.Services.RegisterMembershipOAuthClientsAsync(
+        [
+            new MembershipOAuthClient(
+                ClientId: "mi-spa",
+                DisplayName: "Mi aplicación",
+                RedirectUris: ["https://localhost:7082/callback"],
+                Scopes: ["openid", "email", "profile", "roles"])
+        ]);
+        """;
+
+    private const string MigrationsCode = """
+        dotnet ef migrations add InitialOAuth --context MembershipOAuthDbContext
+        dotnet ef database update --context MembershipOAuthDbContext
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember("MembershipOAuthDbContext", "Contexto de datos de OpenIddict, sobre el que generas tus migraciones."),
+        new ContractMember("MembershipOAuthOptions", "Rutas de los endpoints, esquema interactivo, vigencias, ámbitos y certificados de desarrollo."),
+        new ContractMember("AddMembershipOAuthServer(...)", "Registra el servidor de autorización. El tercer parámetro deja configurar OpenIddict directamente."),
+        new ContractMember("MapMembershipOAuthEndpoints()", "Monta autorización, token, userinfo, cierre de sesión y revocación."),
+        new ContractMember("RegisterMembershipOAuthClientsAsync(...)", "Da de alta los clientes de forma idempotente: vuelve a describirlos si ya estaban.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

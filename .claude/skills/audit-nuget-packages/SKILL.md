@@ -1,6 +1,6 @@
 ---
 name: audit-nuget-packages
-description: Audita, sin escribir en ellos, todos los repositorios de paquetes NuGet que cuelgan de packagesRoot y levanta el inventario de homologación en specs/PackageInventory.md — qué le falta a cada paquete para cumplir el estándar (estructura, metadata del .csproj, README, avisos de compilación y página en el sitio) y en qué orden conviene atacarlos. Usa este skill cuando el usuario pregunte por el estado de la flota de paquetes, pida saber cuáles están homologados o cuánto trabajo queda, o quiera la cola de trabajo antes de empezar a corregir (Ej. "¿cómo están mis paquetes?", "levanta el inventario", "¿cuáles faltan por homologar?").
+description: Audita, sin escribir en ellos, todos los paquetes NuGet de la flota —los del monorepo Persiltech.Packages y los que aún tienen repositorio propio— y levanta el inventario de homologación en specs/PackageInventory.md, con qué le falta a cada uno para cumplir el estándar (estructura, metadata del .csproj, README, avisos de compilación y página en el sitio) y en qué orden conviene atacarlos. Usa este skill cuando el usuario pregunte por el estado de la flota de paquetes, pida saber cuáles están homologados o cuánto trabajo queda, o quiera la cola de trabajo antes de empezar a corregir (Ej. "¿cómo están mis paquetes?", "levanta el inventario", "¿cuáles faltan por homologar?").
 allowed-tools:
   - PowerShell
   - Read
@@ -33,18 +33,43 @@ eso es homologación, y aquí no se escribe en ningún repositorio de paquete.
 
 **Este skill no define qué es "homologado", y no lo comprueba por su cuenta.**
 
-`Get-PackageAudit.ps1` es un recorrido: descubre los repositorios e invoca sobre cada uno
+`Get-PackageAudit.ps1` es un recorrido: descubre los paquetes e invoca sobre cada uno
 `Get-HomologationPlan.ps1`, del skill global `homologate-nuget-package`, que es la **única
 definición** del estándar a nivel de paquete. Si el auditor volviera a comprobar por su cuenta,
 habría dos definiciones y se separarían.
 
-Lo que este skill aporta es lo que el plan no puede saber, porque solo ve un repositorio:
+Lo que este skill aporta es lo que el plan no puede saber, porque solo ve un paquete:
 
 | Lo pone el plan (global) | Lo pone este skill (portafolio) |
 |---|---|
 | Estructura, metadata, README, avisos de compilación | Descubrimiento de la flota |
 | Las preguntas bloqueantes | La ruta asignada a cada paquete, de `specs/Packages.md` |
-| | Si el paquete ya tiene página, ruta y entrada en el catálogo |
+| Qué es del repositorio y qué del paquete | Si el paquete ya tiene página, ruta y entrada en el catálogo |
+| | Agrupar por repositorio lo que es del repositorio |
+
+---
+
+## Dónde vive la flota
+
+La mayoría de los paquetes se publican desde el **monorepo** `Persiltech.Packages`: un
+repositorio, un `.slnx`, y un proyecto empaquetable por paquete bajo `src/`. Los que todavía
+tienen repositorio propio se auditan igual, pero solo si `specs/Packages.md` los declara con
+`path`.
+
+**Esa lista es la que manda, y no es un detalle.** Al trasladar un paquete al monorepo, su
+repositorio de origen se queda en disco con una copia. Recorrer el directorio a ciegas auditaría
+cada paquete **dos veces** y daría por pendiente en la copia vieja lo que ya se arregló en el
+monorepo. El auditor las salta y las enumera aparte, como *no auditadas*.
+
+**Los pendientes del repositorio se cuentan una vez.** El plan separa lo que es del repositorio
+—la solución, la gestión centralizada, el `LICENSE`, el `.gitattributes`, los workflows— de lo
+que es del paquete, y el auditor lo agrupa por repositorio. Sin eso, un `publish.yml` que falta
+saldría diez veces y dejaría los diez paquetes del monorepo en estado `estructura` por un solo
+defecto que se arregla una vez.
+
+Lo mismo con las **preguntas bloqueantes**: el plan las emite por paquete porque solo ve uno,
+pero "¿el código es público?" es una pregunta del repositorio. El auditor las agrupa por texto y
+dice a qué paquetes afecta cada una.
 
 **Dependencia:** sin el skill global instalado, este no funciona, y falla con un
 `CRITICAL_ERROR` que lo dice. Es deliberado: preferible a comprobar contra un estándar propio
@@ -54,9 +79,9 @@ que envejecería aparte.
 
 ## Alcance
 
-- **Los repositorios de los paquetes son de solo lectura, sin excepción.** Lo que no cumpla el
-  estándar **se anota en el inventario**, no se arregla. La única escritura que provoca la
-  auditoría es la de `obj/` y `bin/` al compilar para medir avisos, que con `-fast` no ocurre.
+- **El monorepo y los repositorios de paquete son de solo lectura, sin excepción.** Lo que no
+  cumpla el estándar **se anota en el inventario**, no se arregla. La única escritura que provoca
+  la auditoría es la de `obj/` y `bin/` al compilar para medir avisos, que con `-fast` no ocurre.
 - **No inventa lo que no puede comprobar.** Ver *Lo que no se puede saber leyendo el disco*.
 - **No modifica `specs/Packages.md`.** Ese archivo declara qué documenta el sitio, y dar de
   alta un paquete es el último paso de la homologación, no el primero. El inventario vive aparte.
@@ -66,7 +91,7 @@ que envejecería aparte.
 
 ## Reglas generales
 - El directorio de trabajo es la raíz del repositorio del portafolio.
-- `packagesRoot` y `siteUrl` salen del frontmatter de `specs/Packages.md`.
+- `monorepoRoot`, `legacyPackagesRoot` y `siteUrl` salen del frontmatter de `specs/Packages.md`.
 - El único archivo que este skill escribe es `specs/PackageInventory.md`.
 - Si falta un dato que impida completar la tarea, detente y pregunta.
 
@@ -76,18 +101,23 @@ que envejecería aparte.
 
 ### Paso 0 — Parámetros
 
-Lee el frontmatter de `specs/Packages.md` y toma `packagesRoot` y `siteUrl`. Si el usuario
-nombra paquetes concretos, pásalos con `-package`.
+Lee el frontmatter de `specs/Packages.md` y toma `monorepoRoot`, `legacyPackagesRoot` y
+`siteUrl`. Si el usuario nombra paquetes concretos, pásalos con `-package`, por su id o por el
+nombre de su directorio.
 
 ### Paso 1 — Auditoría
 
 ```powershell
 pwsh -NoProfile -ExecutionPolicy Bypass -File "{SKILL_DIR}/scripts/Get-PackageAudit.ps1" `
-    -packagesRoot "{{packagesRoot}}" `
+    -monorepoRoot "{{monorepoRoot}}" `
+    -legacyPackagesRoot "{{legacyPackagesRoot}}" `
     -siteUrl "{{siteUrl}}" `
     -sitePath "{{raíz del portafolio}}" `
     -asText
 ```
+
+> `-legacyPackagesRoot` se omite cuando `specs/Packages.md` ya no declara ninguna entrada con
+> `path`, es decir, cuando toda la flota vive en el monorepo.
 
 > `{SKILL_DIR}` es el directorio de este `SKILL.md`, dentro de `.claude/skills/` del
 > portafolio. Resuélvelo a ruta absoluta: `pwsh -File` no acepta rutas relativas de forma fiable.
@@ -104,9 +134,11 @@ salen como `sin-medir`. Úsalo para un primer barrido y repite sin él antes de 
 
 | Salida | Acción |
 |---|---|
-| `CRITICAL_ERROR: No existe el directorio de paquetes '...'` | Detente. El `packagesRoot` es incorrecto o el disco no está montado |
+| `CRITICAL_ERROR: No existe el monorepo '...'` | Detente. El `monorepoRoot` es incorrecto o el disco no está montado |
 | `CRITICAL_ERROR: No se encontró el plan de homologación en '...'` | Falta el skill global `homologate-nuget-package`. Sin él este skill no puede auditar; no improvises comprobaciones |
+| `CRITICAL_ERROR: El plan no devolvió una lista de paquetes legible` | El skill global está instalado pero es una versión anterior, sin `-listPackages`. Sin ella no se puede descubrir qué hay dentro del monorepo. Detente y actualízalo |
 | Un paquete en estado `no-legible` | El plan no encontró proyecto empaquetable, o no devolvió JSON. Es un problema de la auditoría, no del paquete. Anótalo aparte |
+| Un bloque `No auditados (n)` | No es error: son los repositorios sueltos cuyo paquete ya vive en el monorepo. Menciónalos en el Paso 5 como candidatos a borrar, y **no los audites a mano** |
 
 ### Paso 2 — Los estados
 
@@ -115,7 +147,7 @@ porque cada una se apoya en la anterior. Las cuatro primeras las decide el plan:
 
 | Estado | Qué significa |
 |---|---|
-| `estructura` | Falta el esqueleto: `.slnx`, gestión centralizada de paquetes, `Directory.Build.props`, `specs/` |
+| `estructura` | Le falta a **este paquete** parte del esqueleto: sus especificaciones, o su directorio de `specs/` con el nombre que no toca |
 | `metadata` | El `.csproj` no cumple: versión, `PackageProjectUrl`, licencia, símbolos, documentación XML |
 | `documentacion` | El `README.md` publicado no tiene la forma canónica |
 | `calidad` | Compila con avisos: miembros públicos sin documentar (`CS1591`) o nulabilidad sin anotar |
@@ -126,6 +158,12 @@ porque cada una se apoya en la anterior. Las cuatro primeras las decide el plan:
 
 Un paquete acumula pendientes de varias etapas; el estado solo dice por dónde empezar. El
 recuento entre paréntesis es el total.
+
+**Los pendientes del repositorio no cuentan para el estado de ningún paquete**, y es
+deliberado: un `publish.yml` que falta es un trabajo, no diez, y dejar los diez paquetes del
+monorepo en `estructura` por él escondería lo que de verdad le falta a cada uno. Salen en su
+propio bloque, `REPOSITORIO {{nombre}}`, y se atacan **antes** que cualquier paquete: se
+arreglan una vez y desbloquean a todos.
 
 **`calidad` es la etapa que más cuesta y la que menos se ve venir.** Documentar con XML
 decenas de miembros públicos supera con holgura el trabajo de metadata y empaquetado juntos.
@@ -152,7 +190,8 @@ que el usuario haya añadido a mano y las respuestas a los `por confirmar` ya re
 ```markdown
 ---
 # Generado por el skill audit-nuget-packages. Los conteos son del día de la auditoría.
-packagesRoot: {{packagesRoot}}
+monorepoRoot: {{monorepoRoot}}
+legacyPackagesRoot: {{legacyPackagesRoot}}
 siteUrl: {{siteUrl}}
 audited: {{AAAA-MM-DD}}
 totals:
@@ -167,10 +206,15 @@ totals:
 
 # Inventario de homologación
 
+## Pendientes del repositorio
+
+Lo que es del repositorio y no de ningún paquete, agrupado por repositorio. Va primero porque
+se arregla una vez y desbloquea a todos sus paquetes.
+
 ## Resumen
 
-| Paquete | Estado | Versión del proyecto | Pendientes |
-|---|---|---|---|
+| Paquete | Repositorio | Estado | Versión del proyecto | Pendientes |
+|---|---|---|---|---|
 
 ## Pendiente de publicar
 
@@ -192,11 +236,16 @@ pregúntala.
 
 Indica al usuario:
 
-- El recuento por estado y cuántos repositorios se auditaron
+- El recuento por estado, cuántos paquetes se auditaron y en cuántos repositorios
+- **Los pendientes del repositorio, aparte y primero**, con el aviso de que se arreglan una vez
+  y valen para todos sus paquetes
 - Si se usó `-fast`, que la calidad no se midió y por eso nadie sale `listo`
 - Los paquetes `no-legible`
-- Las preguntas bloqueantes, todas juntas
-- Que **no se escribió en ningún repositorio de paquete** y que `specs/Packages.md` sigue igual
+- **Los repositorios no auditados**, si los hay: son copias que quedaron atrás de paquetes ya
+  trasladados al monorepo, y borrarlos evita que alguien edite la copia equivocada
+- Las preguntas bloqueantes, todas juntas y ya agrupadas, diciendo a qué paquetes afecta cada una
+- Que **no se escribió en el monorepo ni en ningún repositorio de paquete** y que
+  `specs/Packages.md` sigue igual
 - Que el inventario es una foto del día
 
 Si el usuario va a empezar a homologar, recuérdale lo que el orden impone:

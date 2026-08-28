@@ -74,7 +74,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
-            new PackageRelease("1.0.2", "El paquete pasa a su propio repositorio y solución, fuera del monorepo compartido. La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. Sin cambios en la API pública."),
+            new PackageRelease("1.0.2", "La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. Sin cambios en la API pública."),
             new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de LocalizationUtils y CultureScope.")
         ]);
 
@@ -100,7 +100,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
-            new PackageRelease("1.0.1", "El paquete pasa a su propio repositorio y solución, fuera del monorepo compartido. La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. El README se reescribió entero: el anterior tenía tres líneas y nombraba un paquete que no existe. Sin cambios en la API pública."),
+            new PackageRelease("1.0.1", "La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. El README se reescribió entero: el anterior tenía tres líneas y nombraba un paquete que no existe. Sin cambios en la API pública."),
             new PackageRelease("1.0.0", "Primera publicación de Result, Result<TSuccess> y Result<TSuccess, TError>.")
         ]);
 
@@ -114,6 +114,30 @@ public sealed class PackageCatalog : IPackageCatalog
         [
             new PackageRelease("0.1.0", "Primera publicación de IEmailSender, EmailMessage y el envío SMTP con MailKit. Las opciones se validan al arrancar con IValidateOptions y devuelven todos los fallos juntos. Remitente y destinatario se analizan con el mismo criterio, que rechaza las direcciones sin dominio antes de abrir la conexión.")
         ]);
+
+    private static readonly NuGetPackage Membership = new(
+        Id: "Persiltech.Membership",
+        Route: "/Membership",
+        Summary: "Sistema de membresía para ASP.NET Core: registro y autenticación sobre ASP.NET Core Identity, endpoints de Minimal API que montas donde quieras y emisión de un JSON Web Token firmado con HMAC-SHA256.",
+        TargetFramework: "net10.0",
+        IsPrerelease: true,
+        Releases:
+        [
+            new PackageRelease("0.5.0", "Primera versión en nuget.org. Registro, autenticación y emisión de JWT sobre ASP.NET Core Identity, con los endpoints de cuenta, roles, usuarios, contraseña, correo, teléfono, perfil y doble factor. Los avisos por correo y SMS salen por puertos que implementa el consumidor. Las versiones 0.1.0 a 0.4.0 fueron internas.")
+        ],
+        IsPublished: false);
+
+    private static readonly NuGetPackage MembershipOAuth = new(
+        Id: "Persiltech.Membership.OAuth",
+        Route: "/Membership.OAuth",
+        Summary: "Servidor de autorización OAuth 2.0 y OpenID Connect sobre OpenIddict para Persiltech.Membership: Authorization Code con PKCE, credenciales de cliente y renovación por refresh token.",
+        TargetFramework: "net10.0",
+        IsPrerelease: true,
+        Releases:
+        [
+            new PackageRelease("0.2.0", "Primera versión en nuget.org. Servidor de autorización sobre OpenIddict con Authorization Code + PKCE, credenciales de cliente y refresh token, emitiendo para las mismas cuentas de ASP.NET Core Identity que administra el paquete base. El registro de clientes es idempotente. La versión 0.1.0 fue interna.")
+        ],
+        IsPublished: false);
 
     private static readonly NuGetPackage MembershipEmail = new(
         Id: "Persiltech.Membership.Email",
@@ -139,6 +163,8 @@ public sealed class PackageCatalog : IPackageCatalog
             Results,
             DomainValidation,
             Email,
+            Membership,
+            MembershipOAuth,
             MembershipEmail
         ];
 

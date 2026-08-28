@@ -1,6 +1,6 @@
 ---
 name: sync-package-pages
-description: Reconcilia las páginas de los paquetes de este portafolio con lo que sus repositorios publican de verdad — el catálogo, la página de cada paquete y la lista de rutas del generador de páginas. Usa este skill cuando el usuario pida añadir un paquete al sitio, actualizar la documentación de un paquete tras publicar una versión, o comprobar si el portafolio se ha quedado atrás (Ej. "añade Persiltech.Results al sitio", "actualiza la página de UserServices", "¿está el portafolio al día?").
+description: Reconcilia las páginas de los paquetes de este portafolio con lo que el monorepo Persiltech.Packages publica de verdad — el catálogo, la página de cada paquete y la lista de rutas del generador de páginas. Usa este skill cuando el usuario pida añadir un paquete al sitio, actualizar la documentación de un paquete tras publicar una versión, o comprobar si el portafolio se ha quedado atrás (Ej. "añade Persiltech.Results al sitio", "actualiza la página de UserServices", "¿está el portafolio al día?").
 ---
 
 # Sincronizador de las páginas de paquetes
@@ -8,10 +8,15 @@ description: Reconcilia las páginas de los paquetes de este portafolio con lo q
 ## Objetivo
 Mantener las páginas de este sitio alineadas con los paquetes que documentan.
 
-El código fuente de los paquetes no es público: nuget.org solo publica el `.nupkg`, y este
-sitio es su única documentación navegable. Cada paquete declara en su `<PackageProjectUrl>`
-una URL de este dominio, así que **una página ausente o desactualizada es un defecto visible
-desde la ficha del paquete**, no un detalle interno.
+Cada paquete declara en su `<PackageProjectUrl>` una URL de este dominio —no la de su
+repositorio—, así que este sitio es lo que la ficha de nuget.org enlaza como *Project
+website*, y **una página ausente o desactualizada es un defecto visible desde la ficha**,
+no un detalle interno.
+
+El código fuente de los paquetes **es público**, y eso no le resta trabajo a este sitio: el
+repositorio documenta *el código*, esta página documenta *el paquete publicado* —su
+contrato, su instalación, su historial de versiones— y es la que el consumidor encuentra
+primero. Son dos documentos con lectores distintos, no uno duplicado.
 
 ## Cuándo usar este skill
 - Añadir al sitio un paquete que aún no tiene página
@@ -25,10 +30,10 @@ navegación: esto solo toca la documentación de paquetes.
 
 ## Alcance
 
-- **Los repositorios de los paquetes son de solo lectura.** De ellos se leen el `.csproj`,
-  `specs/PublicApi.md` y el `README.md`. Nunca se editan desde aquí: la versión, la metadata
-  y el README de un paquete se cambian en su propio repositorio, con su propio flujo, porque
-  cada cambio ahí implica publicar. Lo que no cuadre **se reporta**, no se corrige.
+- **El código de los paquetes es de solo lectura.** De él se leen el `.csproj`, el `PublicApi.md`
+  y el `README.md`. Nunca se edita desde aquí: la versión, la metadata y el README de un paquete
+  se cambian en el monorepo, con su propio flujo, porque cada cambio ahí implica publicar. Lo que
+  no cuadre **se reporta**, no se corrige.
 - **No inventa versiones publicadas.** El `<VersionPrefix>` de un `.csproj` es la versión que
   se publicará *la próxima vez*, y puede no estar todavía en nuget.org.
 - **No redacta notas de versión.** Ver el _Paso 4_.
@@ -38,8 +43,10 @@ navegación: esto solo toca la documentación de paquetes.
 
 ## Reglas generales
 - El directorio de trabajo es la raíz de este repositorio.
-- La especificación es `specs/Packages.md`: qué paquetes se documentan y dónde vive el
-  repositorio de cada uno. Es la única lista válida; no descubras paquetes por tu cuenta.
+- La especificación es `specs/Packages.md`: qué paquetes se documentan y dónde vive el código de
+  cada uno. Es la única lista válida; **no descubras paquetes por tu cuenta**, y menos recorriendo
+  el `src/` del monorepo: ahí puede haber un paquete recién creado que todavía no se publica ni
+  se documenta.
 - Las convenciones de código (C# 14, .NET 10, identificadores en inglés, `GlobalUsings.cs`,
   namespaces file-scoped) están en el `AGENTS.md` global del usuario. Aplícalas; no las
   repitas aquí.
@@ -73,30 +80,47 @@ El índice `/packages` y la navegación no se tocan: ambos salen del catálogo.
 
 ### Paso 0 — Leer la especificación
 
-Lee `specs/Packages.md`. De su frontmatter salen `siteUrl`, `packagesRoot` y la lista
-`packages` con el `id`, la `route` y el `path` de cada uno.
+Lee `specs/Packages.md`. De su frontmatter salen `siteUrl`, `monorepoRoot`,
+`legacyPackagesRoot` y la lista `packages` con el `id`, la `route` y —según dónde viva el
+código— el `project` o el `path` de cada uno.
 
 Si el usuario nombra un paquete concreto, trabaja solo sobre él. Si no nombra ninguno,
 recorre la lista entera.
 
-### Paso 1 — Leer cada paquete en su repositorio
+### Paso 1 — Leer cada paquete en su código
 
-Para cada entrada, el repositorio está en `{packagesRoot}/{path}`. Lee de él:
+**Dónde buscar depende de qué declare la entrada, y no se adivina.** Casi toda la flota vive
+en el monorepo `Persiltech.Packages`, donde cada paquete es un proyecto de `src/` con su propio
+README dentro; los que aún tienen repositorio propio siguen con el README en la raíz.
+
+| Fuente | Con `project` (monorepo) | Con `path` (repositorio propio) |
+|---|---|---|
+| El `.csproj` | `{monorepoRoot}/{project}/{id}.csproj` | `{legacyPackagesRoot}/{path}/src/{id}/{id}.csproj` |
+| El README | `{monorepoRoot}/{project}/README.md` | `{legacyPackagesRoot}/{path}/README.md` |
+| La superficie pública | `{monorepoRoot}/specs/{id}/PublicApi.md` | `{legacyPackagesRoot}/{path}/specs/PublicApi.md` |
+
+De ahí sale:
 
 | Fuente | Qué sale de ahí |
 |---|---|
-| `src/{id}/{id}.csproj` | `<VersionPrefix>`, `<Description>`, `<PackageProjectUrl>`, el TFM y si el código es privado |
-| `specs/PublicApi.md` | La **Superficie pública**: los tipos, sus miembros y las decisiones de diseño |
+| El `.csproj` | `<VersionPrefix>`, `<Description>`, `<PackageProjectUrl>`, el TFM y si el código es privado |
+| `PublicApi.md` | La **Superficie pública**: los tipos, sus miembros y las decisiones de diseño |
 | `README.md` | La prosa ya redactada del paquete, que es la base de la página |
 
-El TFM sale de `Directory.Build.props` si el `.csproj` no lo declara.
+El TFM sale del `Directory.Build.props` del repositorio si el `.csproj` no lo declara. En el
+monorepo ese archivo es **uno para todos los paquetes**: si dice `net10.0`, lo dice para los
+diez.
+
+> Si un `PublicApi.md` no aparece en la ruta que toca, prueba también `specs/{id sin el prefijo
+> de empresa}/`: quedan directorios con el nombre corto de antes de unificar el criterio.
+> Repórtalo en el Paso 6 —la homologación lo renombra— y sigue leyendo del que encontraste.
 
 Un paquete se considera de **código privado** si su `.csproj` no declara `<RepositoryUrl>` o
 trae `<EnableSourceLink>false</EnableSourceLink>`. En ese caso la página no enlaza a
 `github.com/{owner}/{repo}` en ninguna sección.
 
 **El `README.md` del paquete es la fuente de la página, no la especificación.** El README
-documenta lo que se implementó; `specs/PublicApi.md` documenta lo que se diseñó, y puede ir
+documenta lo que se implementó; `PublicApi.md` documenta lo que se diseñó, y puede ir
 por delante. Cuando se contradigan, manda el README, y dilo en el Paso 6.
 
 ### Paso 2 — Comprobación cruzada de la URL
@@ -104,7 +128,7 @@ por delante. Cuando se contradigan, manda el README, y dilo en el Paso 6.
 Compara el `<PackageProjectUrl>` del paquete con `{siteUrl}/{route}/`.
 
 Si no coinciden, **repórtalo en el Paso 6 y no lo corrijas**: el arreglo vive en el
-repositorio del paquete y obliga a publicar una versión nueva, porque la metadata de
+monorepo, en el `.csproj` del paquete, y obliga a publicar una versión nueva, porque la metadata de
 nuget.org es inmutable por versión. Sigue con la sincronización de la página igualmente: que
 el paquete apunte a otro sitio no es motivo para dejar la página sin actualizar.
 
@@ -182,9 +206,12 @@ Indica los archivos creados o modificados y, de forma explícita:
 
 - Las filas de historial que quedaron en `PENDIENTE`
 - Todo `<PackageProjectUrl>` que no coincida con `{siteUrl}/{route}/`, con las dos URLs a la
-  vista y recordando que se corrige en el repositorio del paquete y solo entra en vigor al
+  vista y recordando que se corrige en el `.csproj` del paquete y solo entra en vigor al
   publicar la versión siguiente
-- Los paquetes de la especificación cuyo repositorio no se pudo leer
+- Los paquetes de la especificación cuyo código no se pudo leer, **con la ruta exacta en la que
+  se buscó**: casi siempre significa que la entrada declara `project` cuando el paquete todavía
+  vive en su repositorio, o al revés
+- Los directorios de `specs/` del monorepo que siguen con el nombre corto en vez del id completo
 - Que la comprobación visual queda pendiente
 
 Si un paquete ya estaba al día, dilo, en lugar de dar a entender que se actualizó algo.
