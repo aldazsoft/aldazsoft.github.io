@@ -38,7 +38,8 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
-            new PackageRelease("0.1.5", "PENDIENTE: describir el cambio."),
+            new PackageRelease("0.1.6", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. El paquete estrena sus notas de versión, el soporte pasa a las incidencias de GitHub y el suelo de Abstractions sube de 0.1.12 a 0.1.15. Sin cambios en la superficie pública."),
+            new PackageRelease("0.1.5", "La dependencia de Abstractions sube de 0.1.0 a 0.1.12: dentro del monorepo el contrato lo aporta el proyecto vecino, y dotnet pack declara la versión que este tiene al empaquetar. Sin cambios en la superficie pública."),
             new PackageRelease("0.1.4", "La dependencia mínima de Abstractions baja de 0.1.8 a 0.1.0: instalar el paquete deja de forzar una actualización que nadie necesitaba."),
             new PackageRelease("0.1.3", "Insignia de licencia enlazada al texto real, no a la plantilla."),
             new PackageRelease("0.1.2", "Página del proyecto en el portafolio y metadata adaptada a un repositorio privado."),
@@ -92,6 +93,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
+            new PackageRelease("2.0.3", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. El README enlaza al monorepo y el soporte pasa a las incidencias de GitHub. El suelo de Persiltech.Localizer sube de 1.0.1 a 1.0.3. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("2.0.2", "Renueva el icono del paquete, que es lo único que cambia de cara al consumidor: pesa la mitad (12 401 → 6 575 bytes) con la misma resolución de 128 × 128. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("2.0.1", "Corrige el historial de versiones, que listaba una 1.0.2 y una 1.0.3 que se prepararon pero nunca llegaron a nuget.org. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("2.0.0", "La evaluación deja de guardar estado: las especificaciones devuelven sus errores en lugar de dejarlos en una propiedad, así que una instancia compartida ya no devuelve el veredicto de otra entidad. El recorrido pasa a ser asíncrono de extremo a extremo y acepta CancellationToken. Nuevas MustAsync y AsyncSpecification, sobrecargas de comparación para anulables por valor, DependencyContainer renombrado a DependencyInjection y erratas corregidas."),
@@ -106,6 +108,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
+            new PackageRelease("1.0.2", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. El README enlaza al monorepo y el soporte pasa a las incidencias de GitHub. El suelo de Persiltech.Localizer sube de 1.0.1 a 1.0.3. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("1.0.1", "La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. El README se reescribió entero: el anterior tenía tres líneas y nombraba un paquete que no existe. Sin cambios en la API pública."),
             new PackageRelease("1.0.0", "Primera publicación de Result, Result<TSuccess> y Result<TSuccess, TError>.")
         ]);
@@ -142,8 +145,7 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.2.0", "Primera versión en nuget.org. Servidor de autorización sobre OpenIddict con Authorization Code + PKCE, credenciales de cliente y refresh token, emitiendo para las mismas cuentas de ASP.NET Core Identity que administra el paquete base. El registro de clientes es idempotente. La versión 0.1.0 fue interna.")
-        ],
-        IsPublished: false);
+        ]);
 
     private static readonly NuGetPackage MembershipEmail = new(
         Id: "Persiltech.Membership.Email",
@@ -154,8 +156,7 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.1.0", "Primera publicación del adaptador de IMembershipEmailSender: confirmación del correo, reinicio de contraseña y cambio de correo, con plantillas HTML embebidas que se sustituyen por archivo. La marca, los colores y las rutas de la aplicación cliente son configuración, y las opciones se validan al arrancar.")
-        ],
-        IsPublished: false);
+        ]);
 
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
