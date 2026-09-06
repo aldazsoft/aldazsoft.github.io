@@ -15,6 +15,9 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.1.15", "Restaura en el README el historial de versiones, el soporte y el apoyo al desarrollo, que se perdieron al migrar el paquete al monorepo. El soporte pasa a las incidencias de GitHub, ahora que el repositorio es público. Sin cambios en el código ni en la superficie pública."),
+            new PackageRelease("0.1.14", "Estrena las notas de versión, que el paquete no declaraba. Anunciaba la restauración del README, que por un commit incompleto no llegó a viajar en el paquete: llega en 0.1.15. Sin cambios en el código ni en la superficie pública."),
+            new PackageRelease("0.1.13", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("0.1.12", "Publica la versión que la etiqueta v0.1.12 no llegó a subir."),
             new PackageRelease("0.1.11", "Apartado de licencia retirado del README; ya lo publica nuget.org."),
             new PackageRelease("0.1.10", "Historial de versiones al día en el README."),
@@ -35,6 +38,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.1.5", "PENDIENTE: describir el cambio."),
             new PackageRelease("0.1.4", "La dependencia mínima de Abstractions baja de 0.1.8 a 0.1.0: instalar el paquete deja de forzar una actualización que nadie necesitaba."),
             new PackageRelease("0.1.3", "Insignia de licencia enlazada al texto real, no a la plantilla."),
             new PackageRelease("0.1.2", "Página del proyecto en el portafolio y metadata adaptada a un repositorio privado."),
@@ -50,6 +54,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
+            new PackageRelease("1.1.2", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. El soporte pasa a las incidencias de GitHub. Microsoft.JSInterop y Microsoft.Extensions.Logging.Abstractions suben de 10.0.9 a 10.0.11. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("1.1.1", "Liberar el servicio mientras su primera llamada aún importa el módulo ya no filtra la referencia, y una llamada en vuelo no falla al salir. Una llamada que sobrevive a su servicio se registra como Debug, no como error. Los constructores documentan las excepciones que lanzan."),
             new PackageRelease("1.1.0", "Corrige el wasmModuleLoader.js empaquetado, que viajaba truncado y no se podía importar. Una importación fallida deja de cachearse: la siguiente llamada reintenta en vez de dejar el servicio muerto. DisposeAsync tolera un circuito caído. WasmLoaderServiceBase pasa a ser abstract, deriva de JSLoaderServiceBase y acepta un ILogger plano. La dependencia se estrecha a Microsoft.JSInterop y Microsoft.Extensions.Logging.Abstractions."),
             new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de JSLoaderServiceBase y WasmLoaderServiceBase.")
@@ -74,6 +79,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: false,
         Releases:
         [
+            new PackageRelease("1.0.3", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. El README enlaza al monorepo y el soporte pasa a las incidencias de GitHub. Microsoft.Extensions.Localization sube de 10.0.9 a 10.0.11. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("1.0.2", "La página del proyecto pasa a ser esta. El texto real de la licencia viaja dentro del .nupkg en lugar de una expresión SPDX, y la superficie pública queda documentada con comentarios XML, así que IntelliSense funciona en el consumidor. Sin cambios en la API pública."),
             new PackageRelease("1.0.0 – 1.0.1", "Primeras publicaciones de LocalizationUtils y CultureScope.")
         ]);
@@ -112,6 +118,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.1.1", "El .nuspec declara el repositorio, ahora público, y activa SourceLink: el depurador del consumidor puede entrar al código fuente. El README enlaza al monorepo y el soporte pasa a las incidencias de GitHub. Sin cambios en el código ni en la superficie pública."),
             new PackageRelease("0.1.0", "Primera publicación de IEmailSender, EmailMessage y el envío SMTP con MailKit. Las opciones se validan al arrancar con IValidateOptions y devuelven todos los fallos juntos. Remitente y destinatario se analizan con el mismo criterio, que rechaza las direcciones sin dominio antes de abrir la conexión.")
         ]);
 
@@ -124,8 +131,7 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.5.0", "Primera versión en nuget.org. Registro, autenticación y emisión de JWT sobre ASP.NET Core Identity, con los endpoints de cuenta, roles, usuarios, contraseña, correo, teléfono, perfil y doble factor. Los avisos por correo y SMS salen por puertos que implementa el consumidor. Las versiones 0.1.0 a 0.4.0 fueron internas.")
-        ],
-        IsPublished: false);
+        ]);
 
     private static readonly NuGetPackage MembershipOAuth = new(
         Id: "Persiltech.Membership.OAuth",
