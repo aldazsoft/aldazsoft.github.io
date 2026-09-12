@@ -133,6 +133,9 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.7.0", "Las clases de opciones pasan a ser planas y cada una estrena su validador IValidateOptions al lado: JwtOptions y MembershipApiOptions dejan de depender de anotaciones de datos, que cortaban en el primer fallo. El validador reúne todos los fallos y nombra la ruta completa de la clave que falta."),
+            new PackageRelease("0.6.1", "Solo documentación. La 0.6.0 se publicó sin la sección que explica cómo elegir el esquema de las tablas, que se escribió después; el README es lo único que un consumidor ve de ese cambio, y sin subir la versión no le llega. El código no cambia."),
+            new PackageRelease("0.6.0", "Sesión renovable y usuario extensible. SessionEndpoints monta user/refresh y user/logout, ambos anónimos: el testigo de renovación es la credencial, y exigir además un token vigente haría imposible renovar justo cuando hace falta. El testigo son 32 bytes aleatorios y en la base solo vive su SHA-256, así que leer la tabla no entrega sesiones utilizables. Cada renovación lo consume y emite otro de la misma familia; presentar uno ya consumido revoca la familia entera, como recomienda la OAuth 2.0 Security BCP."),
             new PackageRelease("0.5.0", "Primera versión en nuget.org. Registro, autenticación y emisión de JWT sobre ASP.NET Core Identity, con los endpoints de cuenta, roles, usuarios, contraseña, correo, teléfono, perfil y doble factor. Los avisos por correo y SMS salen por puertos que implementa el consumidor. Las versiones 0.1.0 a 0.4.0 fueron internas.")
         ]);
 
@@ -144,6 +147,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.3.0", "MembershipOAuthOptions pasa a ser una clase plana con su validador MembershipOAuthOptionsValidator al lado, que reúne todos los fallos de configuración en lugar de cortar en el primero y nombra la ruta completa de cada clave."),
             new PackageRelease("0.2.0", "Primera versión en nuget.org. Servidor de autorización sobre OpenIddict con Authorization Code + PKCE, credenciales de cliente y refresh token, emitiendo para las mismas cuentas de ASP.NET Core Identity que administra el paquete base. El registro de clientes es idempotente. La versión 0.1.0 fue interna.")
         ]);
 
