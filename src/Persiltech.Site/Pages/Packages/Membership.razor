@@ -130,7 +130,7 @@ else
 
     <SectionHeading Text="Historial de versiones" />
     <MudText Typo="Typo.body1">
-        El código fuente no es público, así que este es el registro de cambios del paquete.
+        El código fuente vive en el <MudLink Href="@SiteLinks.RepositoryUrl">monorepo</MudLink>, y esta tabla resume qué cambió en cada versión publicada.
     </MudText>
     <ReleaseHistoryTable Releases="package.Releases" />
 
@@ -138,7 +138,7 @@ else
     <MudGrid Spacing="4">
         <MudItem xs="12" sm="6">
             <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
-                El código fuente de este paquete no es público. Escribe a
+                Para dudas, fallos o peticiones abre una <MudLink Href="@SiteLinks.IssuesUrl">incidencia</MudLink>. También puedes escribir a
                 <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
             </CalloutCard>
         </MudItem>

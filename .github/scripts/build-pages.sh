@@ -45,6 +45,7 @@ routes=(
   "Membership|Persiltech.Membership|Sistema de membresía para ASP.NET Core: registro y autenticación sobre ASP.NET Core Identity, endpoints de Minimal API que montas donde quieras y emisión de un JSON Web Token firmado con HMAC-SHA256."
   "Membership.OAuth|Persiltech.Membership.OAuth|Servidor de autorización OAuth 2.0 y OpenID Connect sobre OpenIddict para Persiltech.Membership: Authorization Code con PKCE, credenciales de cliente y renovación por refresh token."
   "Membership.Email|Persiltech.Membership.Email|El adaptador de correo de Persiltech.Membership: compone los avisos de la cuenta con plantillas HTML que se rebrandean por configuración, y los entrega por Persiltech.Email."
+  "Membership.Blazor|Persiltech.Membership.Blazor|Cliente Blazor de Persiltech.Membership: estado de autenticación a partir del JWT que emite la API, renovación automática de la sesión y los formularios de MudBlazor de sus pantallas."
   "about|Trayectoria|Experiencia, tecnologías y forma de trabajar de Edinson Aldaz."
   "contact|Contacto|Soporte de los paquetes, consultoría y colaboración."
   "license|Licencia MIT|Texto de la licencia MIT bajo la que se publican los paquetes, con su titular del copyright."

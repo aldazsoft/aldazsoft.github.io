@@ -20,6 +20,17 @@ public static class SiteLinks
     public const string SponsorUrl = "https://github.com/sponsors/aldazsoft";
 
     /// <summary>
+    /// Monorepo público desde el que se publican los paquetes de la casa.
+    /// </summary>
+    public const string RepositoryUrl = "https://github.com/aldazsoft/persiltech.packages";
+
+    /// <summary>
+    /// Incidencias del monorepo, que es el canal de soporte de los paquetes cuyo
+    /// código es público.
+    /// </summary>
+    public const string IssuesUrl = $"{RepositoryUrl}/issues";
+
+    /// <summary>
     /// Página del sitio con el texto de la licencia MIT bajo la que se publican
     /// los paquetes.
     /// </summary>

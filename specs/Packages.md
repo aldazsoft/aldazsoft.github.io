@@ -74,6 +74,10 @@ packages:
   - id: Persiltech.Membership.Email
     route: Membership.Email
     project: src/Persiltech.Membership.Email
+
+  - id: Persiltech.Membership.Blazor
+    route: Membership.Blazor
+    project: src/Persiltech.Membership.Blazor
 ---
 
 # Propósito

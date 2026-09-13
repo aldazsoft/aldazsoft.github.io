@@ -162,6 +162,19 @@ public sealed class PackageCatalog : IPackageCatalog
             new PackageRelease("0.1.0", "Primera publicación del adaptador de IMembershipEmailSender: confirmación del correo, reinicio de contraseña y cambio de correo, con plantillas HTML embebidas que se sustituyen por archivo. La marca, los colores y las rutas de la aplicación cliente son configuración, y las opciones se validan al arrancar.")
         ]);
 
+    private static readonly NuGetPackage MembershipBlazor = new(
+        Id: "Persiltech.Membership.Blazor",
+        Route: "/Membership.Blazor",
+        Summary: "Cliente Blazor de Persiltech.Membership: el estado de autenticación a partir del JWT que emite la API, la renovación automática de la sesión, el manejador que firma cada petición y los formularios de MudBlazor de sus pantallas.",
+        TargetFramework: "net10.0",
+        IsPrerelease: true,
+        Releases:
+        [
+            new PackageRelease("2.0.0-preview.2", "MembershipApiOptions pasa a ser una clase plana, sin anotaciones de datos. La comprobación la hace MembershipApiOptionsValidator, que AddMembershipBlazor invoca al registrar —en WebAssembly no hay host que arranque servicios, así que ValidateOnStart no correría nunca—, y que ahora exige además que BaseAddress sea una URL http o https: en Unix una ruta como /api parsea como URI absoluta y se colaba."),
+            new PackageRelease("2.0.0-preview.1", "Reescritura completa. Cliente de Persiltech.Membership 0.6.0: estado de autenticación con renovación, almacén de testigos sustituible, manejador que firma cada petición y los formularios de sesión, registro y contraseña."),
+            new PackageRelease("1.0.0 – 1.0.1", "Versiones del monorepo anterior, con otra API y con las pantallas de empleados y clientes.")
+        ]);
+
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
     private static readonly IReadOnlyList<NuGetPackage> Packages =
@@ -176,7 +189,8 @@ public sealed class PackageCatalog : IPackageCatalog
             Email,
             Membership,
             MembershipOAuth,
-            MembershipEmail
+            MembershipEmail,
+            MembershipBlazor
         ];
 
     /// <inheritdoc />
