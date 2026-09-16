@@ -100,9 +100,34 @@ else
     <MudText Typo="Typo.body1">
         El campo del segundo factor <strong>solo aparece cuando la API lo pide</strong>: mostrarlo
         siempre invitaría a rellenarlo a quien no lo tiene activado. Los cuatro aceptan
-        <code>SubmitLabel</code> y <code>Dense</code>, y para pintar los errores de una llamada
-        tuya, <code>MembershipValidationErrors</code> toma el <code>ApiResult&lt;T&gt;.Errors</code>
-        directamente.
+        <code>SubmitLabel</code> para el texto del botón y <code>Dense</code> para encajar en un
+        diálogo, y los botones envían el formulario, así que la tecla Intro funciona.
+    </MudText>
+
+    <SectionHeading Text="Dónde salen los errores" />
+    <MudText Typo="Typo.body1">
+        Cada mensaje que devuelve la API se pinta <strong>bajo el campo que lo provocó</strong>, con
+        el mismo aspecto que tendría el de una anotación, en lugar de amontonarse en un cartel
+        encima del formulario. De eso se encarga
+        <MudLink Href="/Validation.Blazor">Persiltech.Validation.Blazor</MudLink>, que es la única
+        dependencia nueva de esta versión y viaja contigo al restaurar el paquete.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Lo que <strong>no</strong> pertenece a ningún campo sí sale arriba, en un aviso: los errores
+        generales, y en la pantalla de cambio de contraseña el más importante de todos —que el
+        testigo no vale o ya caducó—, porque el testigo no se muestra y no hay campo donde ponerlo.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Los formularios comprueban además en el navegador lo que no hace falta preguntar: que los
+        campos obligatorios estén, y que el correo tenga forma de correo. La fortaleza de la
+        contraseña no, porque la fija tu política de Identity y este paquete no la conoce: dila con
+        <code>PasswordHelperText</code> y deja que el servidor la haga cumplir.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Para pintar los errores de una llamada tuya, usa el mismo componente:
+        <code>&lt;ApiValidator /&gt;</code> dentro de tu <code>EditForm</code> y
+        <code>Show(result.Errors)</code> con el <code>ApiResult&lt;T&gt;.Errors</code> cuando la
+        llamada vuelva.
     </MudText>
 
     <SectionHeading Text="La sesión" />

@@ -172,6 +172,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("2.0.0-preview.4", "Los cuatro formularios pasan a EditForm y cada error de la API se pinta bajo el campo que lo provocó, con Persiltech.Validation.Blazor —la única dependencia nueva—. Desaparece MembershipValidationErrors, el cartel que reunía los errores de todos los campos: lo que no es de ningún campo sigue saliendo arriba, y el resto va a su sitio. El aviso de que las dos contraseñas no coinciden sale ahora bajo su campo. Los campos obligatorios y el formato del correo se comprueban ya en el navegador, y los botones envían el formulario, así que la tecla Intro funciona."),
             new PackageRelease("2.0.0-preview.3", "El formulario de reinicio deja de pintar el testigo en un campo editable: es una credencial, y enseñarlo solo consigue que acabe copiado en un chat de soporte o capturado en una pantalla. Se lee del enlace y se queda en memoria, y la cadena de consulta se limpia de la barra de direcciones en cuanto se lee —ClearQueryString lo desactiva—. El correo pasa a solo lectura, pero solo si vino en el enlace. Se añade la confirmación de contraseña, que el servidor no puede validar porque recibe una sola."),
             new PackageRelease("2.0.0-preview.2", "MembershipApiOptions pasa a ser una clase plana, sin anotaciones de datos. La comprobación la hace MembershipApiOptionsValidator, que AddMembershipBlazor invoca al registrar —en WebAssembly no hay host que arranque servicios, así que ValidateOnStart no correría nunca—, y que ahora exige además que BaseAddress sea una URL http o https: en Unix una ruta como /api parsea como URI absoluta y se colaba."),
             new PackageRelease("2.0.0-preview.1", "Reescritura completa. Cliente de Persiltech.Membership 0.6.0: estado de autenticación con renovación, almacén de testigos sustituible, manejador que firma cada petición y los formularios de sesión, registro y contraseña."),
@@ -187,8 +188,7 @@ public sealed class PackageCatalog : IPackageCatalog
         Releases:
         [
             new PackageRelease("0.1.0", "Primera versión. ApiValidator escribe en el EditContext los errores que devuelve la API, emparejando la clave de cada uno con la propiedad del modelo —incluidas las rutas anidadas y las indexadas— y dejando en Unmatched lo que no encuentra dueño, en lugar de descartarlo.")
-        ],
-        IsPublished: false);
+        ]);
 
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
