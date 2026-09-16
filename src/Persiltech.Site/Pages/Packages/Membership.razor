@@ -211,6 +211,7 @@ else
             Task SendEmailConfirmationAsync(EmailConfirmationMessage message, CancellationToken cancellationToken);
             Task SendPasswordResetAsync(PasswordResetMessage message, CancellationToken cancellationToken);
             Task SendEmailChangeAsync(EmailChangeMessage message, CancellationToken cancellationToken);
+            Task SendAccountLockedAsync(AccountLockedMessage message, CancellationToken cancellationToken);
         }
 
         public interface IMembershipSmsSender

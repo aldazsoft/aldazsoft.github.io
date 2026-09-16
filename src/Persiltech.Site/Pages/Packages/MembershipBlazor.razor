@@ -104,6 +104,27 @@ else
         diálogo, y los botones envían el formulario, así que la tecla Intro funciona.
     </MudText>
 
+    <SectionHeading Text="Los rótulos son tuyos" />
+    <MudText Typo="Typo.body1">
+        Todos los textos salen de <code>MembershipFormTexts</code> y se sustituyen con
+        <code>AddMembershipFormTexts</code>. El delegado recibe los valores por defecto ya puestos,
+        así que basta con tocar los que cambien:
+    </MudText>
+    <CodeBlock Code="@TextsCode" />
+    <MudText Typo="Typo.body1">
+        Da igual el orden respecto a <code>AddMembershipBlazor</code>: el registro del paquete usa
+        <code>TryAdd</code> y no pisa lo que ya haya. Antes el español venía fijado dentro de los
+        componentes, que era lo que obligaba a bifurcar el paquete para cambiar una palabra.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Los formularios traen además lo que un campo de credenciales necesita: cada uno declara su
+        <code>autocomplete</code>, así que los gestores de contraseñas rellenan, ofrecen guardar y
+        proponen generar una nueva donde toca; las contraseñas llevan un botón para enseñarlas con
+        su descripción para los lectores de pantalla; el aviso de error se anuncia al aparecer con
+        <code>role="alert"</code>; el foco arranca en el primer campo que toca escribir; y mientras
+        la petición está en vuelo el botón lo dice y queda deshabilitado.
+    </MudText>
+
     <SectionHeading Text="Dónde salen los errores" />
     <MudText Typo="Typo.body1">
         Cada mensaje que devuelve la API se pinta <strong>bajo el campo que lo provocó</strong>, con
@@ -276,6 +297,15 @@ else
 
         public sealed class MembershipBearerTokenHandler : DelegatingHandler;
 
+        public sealed class MembershipFormTexts
+        {
+            public string Email { get; set; } = "Correo";
+            public string Password { get; set; } = "Contraseña";
+            public string TwoFactorCode { get; set; } = "Código del doble factor";
+            public string ShowPassword { get; set; } = "Mostrar la contraseña";
+            public string Working { get; set; } = "Enviando…";
+        }
+
         public static class DependencyInjection
         {
             public const string HttpClientName = "Persiltech.Membership";
@@ -283,6 +313,10 @@ else
             public static IServiceCollection AddMembershipBlazor(
                 this IServiceCollection services,
                 Action<MembershipApiOptions> configureOptions);
+
+            public static IServiceCollection AddMembershipFormTexts(
+                this IServiceCollection services,
+                Action<MembershipFormTexts> configureTexts);
         }
         """;
 
@@ -314,6 +348,14 @@ else
 
             await Auth.SignInAsync(result.Value);
         }
+        """;
+
+    private const string TextsCode = """
+        builder.Services.AddMembershipFormTexts(texts =>
+        {
+            texts.Email = "Usuario";
+            texts.Password = "Clave";
+        });
         """;
 
     private const string NamedClientCode = """

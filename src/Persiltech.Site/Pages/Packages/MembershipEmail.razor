@@ -100,6 +100,13 @@ else
         phishing con un testigo válido dentro.
     </MudAlert>
 
+    <MudText Typo="Typo.body1">
+        El aviso de <strong>cuenta bloqueada</strong> es la excepción: no lleva testigo, así que no
+        hay pantalla a la que dirigir a nadie y no se construye enlace. Dice cuánto dura el bloqueo
+        con <code>{{LockoutMinutes}}</code> en lugar de a qué hora termina, que dependería de la
+        zona horaria de quien lo lee.
+    </MudText>
+
     <SectionHeading Text="Las plantillas" />
     <MudText Typo="Typo.body1">
         Cada aviso son tres archivos embebidos en el ensamblado: el asunto, el cuerpo HTML y el
@@ -203,6 +210,8 @@ else
             },
             "LogoUrl": "https://cdn.example.com/logo.png",
             "PrimaryColor": "#0d6efd",
+            "OnPrimaryColor": "#ffffff",
+            "Language": "es",
             "SupportEmail": "soporte@example.com"
           }
         }
@@ -221,6 +230,8 @@ else
 
             public string? LogoUrl { get; set; }                       // si se indica, absoluta
             public string PrimaryColor { get; set; } = "#0d6efd";      // #rgb o #rrggbb
+            public string OnPrimaryColor { get; set; } = "#ffffff";    // el texto sobre PrimaryColor
+            public string Language { get; set; } = "es";               // etiqueta BCP 47
             public string? SupportEmail { get; set; }
 
             public string? TemplatesDirectory { get; set; }            // si se indica, tiene que existir
@@ -234,7 +245,8 @@ else
         ├── EmailConfirmation.html
         ├── EmailConfirmation.txt
         ├── PasswordReset.{subject.txt,html,txt}
-        └── EmailChange.{subject.txt,html,txt}
+        ├── EmailChange.{subject.txt,html,txt}
+        └── AccountLocked.{subject.txt,html,txt}
         """;
 
     private const string RendererCode = """
@@ -256,6 +268,8 @@ else
         new ContractMember("string EmailChangePath { get; set; }", "Ruta de la pantalla que confirma el cambio de correo. Por defecto /confirm-email-change."),
         new ContractMember("string? LogoUrl { get; set; }", "Logotipo del encabezado. Opcional; si se indica, absoluta. Sin él se rotula la marca como texto."),
         new ContractMember("string PrimaryColor { get; set; }", "Color del encabezado y del botón, en hexadecimal. Por defecto #0d6efd."),
+        new ContractMember("string OnPrimaryColor { get; set; }", "Color del texto sobre PrimaryColor. Por defecto blanco, que sobre una marca clara no se lee."),
+        new ContractMember("string Language { get; set; }", "Idioma de los mensajes, como etiqueta BCP 47. Va al atributo lang del documento; no traduce nada."),
         new ContractMember("string? SupportEmail { get; set; }", "Correo de contacto del pie. Opcional."),
         new ContractMember("string? TemplatesDirectory { get; set; }", "Directorio cuyas plantillas ganan a las embebidas, por nombre de archivo. Si se indica, tiene que existir.")
     ];
