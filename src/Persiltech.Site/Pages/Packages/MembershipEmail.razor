@@ -87,6 +87,19 @@ else
         el camino.
     </MudText>
 
+    <MudText Typo="Typo.body1">
+        Con más de un portal, la raíz del enlace sale de <code>ClientBaseUrls</code>: la cabecera
+        <code>clientId</code> que envía el frontal elige cuál. Con una sola dirección, quien pedía
+        su contraseña desde el portal de clientes recibía un enlace hacia el administrativo.
+    </MudText>
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+        Esa clave llega en una cabecera, que cualquiera puede escribir, así que
+        <strong>solo elige entre lo que ya está configurado</strong>: un valor que no figure en
+        <code>ClientBaseUrls</code> cae en <code>ClientBaseUrl</code>. El enlace nunca se
+        construye con una dirección venida de la petición, que sería regalar un enlace de
+        phishing con un testigo válido dentro.
+    </MudAlert>
+
     <SectionHeading Text="Las plantillas" />
     <MudText Typo="Typo.body1">
         Cada aviso son tres archivos embebidos en el ensamblado: el asunto, el cuerpo HTML y el
@@ -184,6 +197,10 @@ else
           "MembershipEmail": {
             "BrandName": "Persiltech",
             "ClientBaseUrl": "https://app.example.com",
+            "ClientBaseUrls": {
+              "admin": "https://admin.example.com",
+              "clientes": "https://app.example.com"
+            },
             "LogoUrl": "https://cdn.example.com/logo.png",
             "PrimaryColor": "#0d6efd",
             "SupportEmail": "soporte@example.com"
@@ -196,6 +213,7 @@ else
         {
             public string BrandName { get; set; } = string.Empty;      // obligatorio
             public string ClientBaseUrl { get; set; } = string.Empty;  // obligatoria, http o https absoluta
+            public IDictionary<string, string> ClientBaseUrls { get; set; }    // una por portal, opcional
 
             public string EmailConfirmationPath { get; set; } = "/confirm-email";
             public string PasswordResetPath { get; set; } = "/reset-password";
@@ -232,6 +250,7 @@ else
     [
         new ContractMember("string BrandName { get; set; }", "Nombre de la marca, en el encabezado, el pie y los asuntos. Obligatorio."),
         new ContractMember("string ClientBaseUrl { get; set; }", "Raíz de la aplicación cliente, no de la API. Obligatoria, y URL absoluta http o https."),
+        new ContractMember("IDictionary<string, string> ClientBaseUrls { get; set; }", "Raíz de la aplicación cliente por cada portal, cuando hay más de uno. La clave es el identificador que el frontal envía en la cabecera clientId. Opcional; cada valor, URL absoluta http o https."),
         new ContractMember("string EmailConfirmationPath { get; set; }", "Ruta de la pantalla que confirma el correo. Por defecto /confirm-email."),
         new ContractMember("string PasswordResetPath { get; set; }", "Ruta de la pantalla que reinicia la contraseña. Por defecto /reset-password."),
         new ContractMember("string EmailChangePath { get; set; }", "Ruta de la pantalla que confirma el cambio de correo. Por defecto /confirm-email-change."),

@@ -1,0 +1,302 @@
+@page "/Validation.Blazor"
+@inject IPackageCatalog Catalog
+
+<PageTitle>Persiltech.Validation.Blazor</PageTitle>
+
+@if (package is null)
+{
+    <MudProgressCircular Indeterminate="true" />
+}
+else
+{
+    <PackageHeader Package="package" />
+
+    <MudText Typo="Typo.body1">
+        Lleva los errores que devuelve una API al campo que los provocó. Los escribe en el
+        <code>EditContext</code> de Blazor, así que el componente de entrada los pinta
+        <strong>como si fueran suyos</strong>: el mismo texto rojo bajo el campo que saldría de una
+        anotación de datos.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        Sin él, un <code>400</code> con <code>ValidationProblemDetails</code> acaba en una lista de
+        mensajes encima del formulario, lejos del campo al que acusan y con una maquetación que
+        cada aplicación repite a su manera.
+    </MudText>
+
+    <SectionHeading Text="Instalación" />
+    <CodeBlock Code="@package.InstallCommand" />
+    @if (!package.IsPublished)
+    {
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            El paquete todavía no está en nuget.org, así que el comando aún no resuelve: esta
+            página se despliega antes que el paquete que la declara como su sitio oficial.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="El contrato" />
+    <CodeBlock Code="@ContractCode" />
+    <ContractMemberTable Members="Members" />
+    <MudText Typo="Typo.body1">Eso es todo: un componente y dos métodos.</MudText>
+
+    <SectionHeading Text="Uso" />
+    <MudText Typo="Typo.body1">
+        Se coloca dentro del <code>EditForm</code>, igual que <code>DataAnnotationsValidator</code>,
+        y se le pasan los errores cuando la llamada vuelve:
+    </MudText>
+    <CodeBlock Code="@UsageCode" />
+    <MudAlert Severity="Severity.Warning" Variant="Variant.Outlined" Dense="true">
+        <strong>El campo tiene que declarar <code>For</code>.</strong> Es lo que ata el componente
+        de entrada a una propiedad del modelo; sin eso no hay a qué campo llevar el mensaje. Con
+        las entradas nativas de Blazor (<code>InputText</code>) ese papel lo hace
+        <code>@@bind-Value</code>.
+    </MudAlert>
+    <MudText Typo="Typo.body1">
+        Las dos validaciones conviven: <code>DataAnnotationsValidator</code> resuelve lo que el
+        navegador puede comprobar solo, y <code>ApiValidator</code> trae lo que solo sabe el
+        servidor. Las dos escriben en el mismo sitio.
+    </MudText>
+
+    <SectionHeading Text="Lo que no es de ningún campo" />
+    <MudText Typo="Typo.body1">
+        <code>ValidationProblemDetails</code> manda los errores generales con la <strong>clave
+        vacía</strong>, y una respuesta puede nombrar un campo que este formulario no tiene.
+        Descartarlos los dejaría invisibles, así que se quedan en <code>Unmatched</code> para que
+        los pintes donde decidas.
+    </MudText>
+    <CodeBlock Code="@UnmatchedCode" />
+
+    <SectionHeading Text="Cómo encuentra el campo" />
+    <MudText Typo="Typo.body1">
+        La clave de la API nombra el campo como lo serializó el servidor, y Blazor lo identifica
+        por el objeto que lo contiene más el nombre de la propiedad. El componente recorre la ruta
+        para dar con ese objeto:
+    </MudText>
+    <MudSimpleTable Dense="true" Hover="true" Striped="true" Elevation="0">
+        <thead>
+            <tr>
+                <th>Clave</th>
+                <th>Va a parar a</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><code>email</code></td>
+                <td><code>model.Email</code> — el emparejamiento ignora mayúsculas</td>
+            </tr>
+            <tr>
+                <td><code>address.city</code></td>
+                <td><code>City</code> <strong>de <code>model.Address</code></strong>, no del raíz</td>
+            </tr>
+            <tr>
+                <td><code>items[0].name</code></td>
+                <td><code>Name</code> del primer elemento, sea lista o arreglo</td>
+            </tr>
+            <tr>
+                <td><code>byCode[abc].name</code></td>
+                <td><code>Name</code> del elemento con esa clave, si la colección indexa</td>
+            </tr>
+            <tr>
+                <td><code>""</code> (vacía)</td>
+                <td><code>Unmatched</code></td>
+            </tr>
+            <tr>
+                <td><code>telefono</code></td>
+                <td><code>Unmatched</code>, si el modelo no tiene esa propiedad</td>
+            </tr>
+        </tbody>
+    </MudSimpleTable>
+    <MudText Typo="Typo.body1">
+        Una ruta que no existe —una rama sin instanciar, un índice fuera de rango, una clave que
+        no está— <strong>no lanza</strong>: el mensaje se va a <code>Unmatched</code>. Un
+        formulario no debe caerse por lo que responda el servidor.
+    </MudText>
+
+    <SectionHeading Text="Cuándo se retiran los mensajes" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>Al editar el campo</strong>, porque el error acusaba al valor que se envió, no
+            al que se está escribiendo.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>Al volver a enviar</strong>, porque lo que dijo la respuesta anterior deja de
+            valer.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>Al cambiar de modelo.</strong> Si el formulario pasa a otro registro —el mismo
+            diálogo que se reabre—, <code>EditForm</code> monta un <code>EditContext</code> nuevo y
+            el componente se muda con él.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>Con <code>Clear()</code></strong>, cuando el formulario lo decida.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Con MudBlazor" />
+    <MudText Typo="Typo.body1">
+        Funciona sin configurar nada. Está comprobado sobre <code>MudTextField</code> —de una línea
+        y con <code>Lines</code>—, <code>MudSelect</code>, <code>MudAutocomplete</code>,
+        <code>MudNumericField</code>, <code>MudDatePicker</code>, <code>MudRadioGroup</code>,
+        <code>MudCheckBox</code> y <code>MudSwitch</code>: en todos el mensaje sale bajo el control
+        con el mismo aspecto que tendría el de una anotación. Tres cosas que conviene saber.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <strong><code>MudTextField</code> enseña un solo mensaje por campo</strong>, el primero. Si
+        tu API devuelve varios para la misma clave, los demás no se ven. Cuando importen todos,
+        júntalos en el servidor en un mensaje o repártelos en claves distintas.
+    </MudText>
+    <MudText Typo="Typo.body1">
+        <strong>Un control sin <code>For</code> no pinta nada, y su mensaje queda invisible</strong>
+        —no en <code>Unmatched</code>, porque la clave sí encontró su propiedad—. Pasa, por ejemplo,
+        con <code>MudSelect</code> en selección múltiple: su <code>For</code> apunta al valor único,
+        no a la lista. La salida es <code>ValidationMessage</code>, que es de Blazor y lee del mismo
+        sitio:
+    </MudText>
+    <CodeBlock Code="@MultiSelectCode" />
+    <MudText Typo="Typo.body1">
+        <strong>Y ese control tampoco avisa al corregirse</strong>, así que el mensaje se quedaría
+        puesto: el formulario lo notifica a mano.
+    </MudText>
+    <CodeBlock Code="@NotifyCode" />
+    <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+        El paquete <strong>no depende de MudBlazor</strong> ni de ninguna biblioteca de interfaz:
+        trabaja contra el <code>EditContext</code>, así que sirve igual con las entradas nativas de
+        Blazor.
+    </MudAlert>
+
+    <SectionHeading Text="Decisiones de diseño" />
+    <MudList T="string" Dense="true">
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>No habla HTTP.</strong> Recibe los errores ya deserializados. Atarlo a un
+            cliente concreto lo haría inservible para quien use otro, y el diccionario por campo es
+            la misma forma en cualquiera de ellos.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>No pinta nada.</strong> Ni un cartel ni un contenedor: escribe en el
+            <code>EditContext</code> y deja que cada componente de entrada muestre lo suyo. Un
+            componente propio para los errores nunca acabaría pareciéndose del todo al resto del
+            formulario.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>Lo que no encuentra dueño no se tira.</strong> Es la diferencia entre un error
+            que se ve en un sitio imperfecto y un error que no se ve.
+        </MudListItem>
+        <MudListItem T="string" Icon="@Icons.Material.Outlined.Check">
+            <strong>Nada de dependencias de interfaz.</strong> Obligaría a arrastrar MudBlazor a
+            quien no la use.
+        </MudListItem>
+    </MudList>
+
+    <SectionHeading Text="Compatibilidad" />
+    <MudText Typo="Typo.body1">
+        <code>@package.TargetFramework</code>, sobre Blazor WebAssembly.
+    </MudText>
+
+    @if (package.IsPrerelease)
+    {
+        <SectionHeading Text="Estado" />
+        <MudAlert Severity="Severity.Info" Variant="Variant.Outlined" Dense="true">
+            Preliberación: la superficie pública puede cambiar antes de la <code>1.0.0</code>.
+        </MudAlert>
+    }
+
+    <SectionHeading Text="Historial de versiones" />
+    <MudText Typo="Typo.body1">
+        El código fuente vive en el <MudLink Href="@SiteLinks.RepositoryUrl">monorepo</MudLink>, y
+        esta tabla resume qué cambió en cada versión publicada.
+    </MudText>
+    <ReleaseHistoryTable Releases="package.Releases" />
+
+    <SectionHeading Text="Soporte y licencia" />
+    <MudGrid Spacing="4">
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.SupportAgent" Title="Soporte">
+                Para dudas, fallos o peticiones abre una
+                <MudLink Href="@SiteLinks.IssuesUrl">incidencia</MudLink>. También puedes escribir a
+                <MudLink Href="@SiteLinks.SupportMailTo">@SiteLinks.SupportEmail</MudLink>.
+            </CalloutCard>
+        </MudItem>
+        <MudItem xs="12" sm="6">
+            <CalloutCard Icon="@Icons.Material.Outlined.Balance" Title="Licencia">
+                MIT. Consulta el
+                <MudLink Href="@SiteLinks.LicenseUrl">texto de la licencia</MudLink>.
+            </CalloutCard>
+        </MudItem>
+    </MudGrid>
+}
+
+@code {
+    private const string PackageId = "Persiltech.Validation.Blazor";
+
+    private const string ContractCode = """
+        public sealed class ApiValidator : ComponentBase, IDisposable
+        {
+            public void Show(IReadOnlyDictionary<string, string[]>? errors);
+            public void Clear();
+
+            public IReadOnlyList<string> Unmatched { get; }
+
+            [Parameter]
+            public EventCallback<IReadOnlyList<string>> UnmatchedChanged { get; set; }
+        }
+        """;
+
+    private const string UsageCode = """
+        <EditForm Model="model" OnValidSubmit="SubmitAsync">
+            <DataAnnotationsValidator />
+            <ApiValidator @ref="validator" />
+
+            <MudTextField For="@(() => model.Email)" @bind-Value="model.Email" Label="Correo" />
+            <MudTextField For="@(() => model.Password)" @bind-Value="model.Password" Label="Contraseña" />
+
+            <MudButton ButtonType="ButtonType.Submit">Registrarme</MudButton>
+        </EditForm>
+        """;
+
+    private const string UnmatchedCode = """
+        <ApiValidator @ref="validator" UnmatchedChanged="@(messages => unmatched = messages)" />
+
+        @if (unmatched.Count > 0)
+        {
+            <MudAlert Severity="Severity.Error">
+                @foreach (var message in unmatched)
+                {
+                    <MudText Typo="Typo.body2">@message</MudText>
+                }
+            </MudAlert>
+        }
+        """;
+
+    private const string MultiSelectCode = """
+        <MudSelect T="string" MultiSelection="true"
+                   SelectedValues="model.Interests"
+                   SelectedValuesChanged="OnInterestsChanged"
+                   Label="Qué te interesa">
+        </MudSelect>
+
+        <MudText Typo="Typo.caption" Color="Color.Error">
+            <ValidationMessage For="@(() => model.Interests)" />
+        </MudText>
+        """;
+
+    private const string NotifyCode = """
+        private void OnInterestsChanged(IReadOnlyCollection<string> values)
+        {
+            model.Interests = [.. values];
+
+            editContext.NotifyFieldChanged(new FieldIdentifier(model, nameof(model.Interests)));
+        }
+        """;
+
+    private static readonly IReadOnlyList<ContractMember> Members =
+    [
+        new ContractMember("void Show(IReadOnlyDictionary<string, string[]>? errors)", "Escribe en el EditContext los errores que devolvió la API, emparejando cada clave con la propiedad del modelo que nombra."),
+        new ContractMember("void Clear()", "Retira del EditContext los mensajes que este componente escribió, sin tocar los de las demás validaciones."),
+        new ContractMember("IReadOnlyList<string> Unmatched { get; }", "Mensajes que no encontraron campo: los de clave vacía y los que nombran una propiedad que el modelo no tiene."),
+        new ContractMember("EventCallback<IReadOnlyList<string>> UnmatchedChanged { get; set; }", "Avisa cuando esa lista cambia, para pintarla donde el formulario decida.")
+    ];
+
+    private NuGetPackage? package;
+
+    /// <inheritdoc />
+    protected override void OnInitialized() => package = Catalog.Find(PackageId);
+}

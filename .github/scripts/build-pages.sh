@@ -41,6 +41,7 @@ routes=(
   "Localizer|Persiltech.Localizer|Acceso fuertemente tipado a archivos de recursos .resx, resuelto desde la cultura de la interfaz del hilo o desde la que se indique."
   "Results|Persiltech.Results|El patrón Result: una operación devuelve su éxito o su fallo como valor, con mensajes de error localizados, en lugar de lanzar excepciones para el flujo previsible."
   "DomainValidation|Persiltech.DomainValidation|Validación de reglas de negocio con el patrón Specification: reglas fluidas por propiedad, evaluación asíncrona y errores reunidos en un ValidationResult."
+  "Validation.Blazor|Persiltech.Validation.Blazor|Lleva los errores de validación que devuelve una API al campo que los provocó, escribiéndolos en el EditContext de Blazor."
   "Email|Persiltech.Email|Envío de correo por SMTP: el contrato IEmailSender y su implementación con MailKit, con las opciones del servidor validadas al arrancar la aplicación."
   "Membership|Persiltech.Membership|Sistema de membresía para ASP.NET Core: registro y autenticación sobre ASP.NET Core Identity, endpoints de Minimal API que montas donde quieras y emisión de un JSON Web Token firmado con HMAC-SHA256."
   "Membership.OAuth|Persiltech.Membership.OAuth|Servidor de autorización OAuth 2.0 y OpenID Connect sobre OpenIddict para Persiltech.Membership: Authorization Code con PKCE, credenciales de cliente y renovación por refresh token."

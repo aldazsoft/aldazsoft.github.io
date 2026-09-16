@@ -133,6 +133,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.8.0", "IAccessTokenClaimsProvider deja que el consumidor añada sus propias reclamaciones al token de acceso: el paquete no sabe qué es un inquilino y no debe saberlo, así que lo aporta quien sí lo sabe. No se pueden sobrescribir Name, Role ni Fullname —sin ese corte, registrar un proveedor sería una vía para concederse cualquier rol— y dos proveedores que aporten la misma reclamación fallan, porque cuál ganara dependería del orden de registro. El emisor pasa de único a con ámbito, ya que las aportaciones suelen salir de una consulta."),
             new PackageRelease("0.7.0", "Las clases de opciones pasan a ser planas y cada una estrena su validador IValidateOptions al lado: JwtOptions y MembershipApiOptions dejan de depender de anotaciones de datos, que cortaban en el primer fallo. El validador reúne todos los fallos y nombra la ruta completa de la clave que falta."),
             new PackageRelease("0.6.1", "Solo documentación. La 0.6.0 se publicó sin la sección que explica cómo elegir el esquema de las tablas, que se escribió después; el README es lo único que un consumidor ve de ese cambio, y sin subir la versión no le llega. El código no cambia."),
             new PackageRelease("0.6.0", "Sesión renovable y usuario extensible. SessionEndpoints monta user/refresh y user/logout, ambos anónimos: el testigo de renovación es la credencial, y exigir además un token vigente haría imposible renovar justo cuando hace falta. El testigo son 32 bytes aleatorios y en la base solo vive su SHA-256, así que leer la tabla no entrega sesiones utilizables. Cada renovación lo consume y emite otro de la misma familia; presentar uno ya consumido revoca la familia entera, como recomienda la OAuth 2.0 Security BCP."),
@@ -159,6 +160,7 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("0.2.0", "ClientBaseUrls declara una dirección de vuelta por portal, y la cabecera clientId —que los frontales ya enviaban sin que nadie la leyera— dice cuál usar. Con una sola dirección, quien pedía su contraseña desde el portal de clientes recibía un enlace hacia el administrativo. La clave llega en una cabecera que cualquiera puede escribir, así que solo elige entre lo configurado y una desconocida cae en ClientBaseUrl: construir el enlace con una dirección venida de la petición sería enviar phishing con un testigo válido dentro."),
             new PackageRelease("0.1.0", "Primera publicación del adaptador de IMembershipEmailSender: confirmación del correo, reinicio de contraseña y cambio de correo, con plantillas HTML embebidas que se sustituyen por archivo. La marca, los colores y las rutas de la aplicación cliente son configuración, y las opciones se validan al arrancar.")
         ]);
 
@@ -170,10 +172,23 @@ public sealed class PackageCatalog : IPackageCatalog
         IsPrerelease: true,
         Releases:
         [
+            new PackageRelease("2.0.0-preview.3", "El formulario de reinicio deja de pintar el testigo en un campo editable: es una credencial, y enseñarlo solo consigue que acabe copiado en un chat de soporte o capturado en una pantalla. Se lee del enlace y se queda en memoria, y la cadena de consulta se limpia de la barra de direcciones en cuanto se lee —ClearQueryString lo desactiva—. El correo pasa a solo lectura, pero solo si vino en el enlace. Se añade la confirmación de contraseña, que el servidor no puede validar porque recibe una sola."),
             new PackageRelease("2.0.0-preview.2", "MembershipApiOptions pasa a ser una clase plana, sin anotaciones de datos. La comprobación la hace MembershipApiOptionsValidator, que AddMembershipBlazor invoca al registrar —en WebAssembly no hay host que arranque servicios, así que ValidateOnStart no correría nunca—, y que ahora exige además que BaseAddress sea una URL http o https: en Unix una ruta como /api parsea como URI absoluta y se colaba."),
             new PackageRelease("2.0.0-preview.1", "Reescritura completa. Cliente de Persiltech.Membership 0.6.0: estado de autenticación con renovación, almacén de testigos sustituible, manejador que firma cada petición y los formularios de sesión, registro y contraseña."),
             new PackageRelease("1.0.0 – 1.0.1", "Versiones del monorepo anterior, con otra API y con las pantallas de empleados y clientes.")
         ]);
+
+    private static readonly NuGetPackage ValidationBlazor = new(
+        Id: "Persiltech.Validation.Blazor",
+        Route: "/Validation.Blazor",
+        Summary: "Lleva los errores de validación que devuelve una API al campo que los provocó: los escribe en el EditContext de Blazor para que el componente de entrada los muestre como si fueran suyos.",
+        TargetFramework: "net10.0",
+        IsPrerelease: true,
+        Releases:
+        [
+            new PackageRelease("0.1.0", "Primera versión. ApiValidator escribe en el EditContext los errores que devuelve la API, emparejando la clave de cada uno con la propiedad del modelo —incluidas las rutas anidadas y las indexadas— y dejando en Unmatched lo que no encuentra dueño, en lugar de descartarlo.")
+        ],
+        IsPublished: false);
 
     // El contrato va primero y su adaptador después, y una dependencia antes que quien la
     // consume: es el orden en que se leen encadenados.
@@ -186,6 +201,7 @@ public sealed class PackageCatalog : IPackageCatalog
             Localizer,
             Results,
             DomainValidation,
+            ValidationBlazor,
             Email,
             Membership,
             MembershipOAuth,

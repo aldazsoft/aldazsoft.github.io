@@ -59,6 +59,10 @@ packages:
     route: DomainValidation
     project: src/Persiltech.DomainValidation
 
+  - id: Persiltech.Validation.Blazor
+    route: Validation.Blazor
+    project: src/Persiltech.Validation.Blazor
+
   - id: Persiltech.Email
     route: Email
     project: src/Persiltech.Email
